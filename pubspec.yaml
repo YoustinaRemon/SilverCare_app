@@ -1,0 +1,54 @@
+name: silvercare
+description: SilverCare - AI-powered health platform for elderly care
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_dotenv: ^5.1.0
+  flutter_tts: ^3.8.5
+  easy_localization: ^3.0.5
+
+  # UI & Design
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.3.0
+  cached_network_image: ^3.3.0
+  shimmer: ^3.0.0
+
+  # Navigation
+  go_router: ^13.0.0
+
+  # State Management
+  provider: ^6.1.1
+
+  # Supabase (Backend)
+  supabase_flutter: ^2.3.0
+
+  # HTTP
+  http: ^1.2.0
+
+  # Storage
+  shared_preferences: ^2.2.2
+
+  # Icons
+  cupertino_icons: ^1.0.6
+
+  # Utils
+  intl: 0.20.2
+  url_launcher: ^6.2.4
+  geolocator: ^11.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/.env
+    - assets/translations/

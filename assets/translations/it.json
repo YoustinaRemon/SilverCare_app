@@ -1,0 +1,147 @@
+{
+  "SilverCare": "SilverCare",
+  "Dashboard": "Dashboard",
+  "Emergency": "Emergenza",
+  "Medications": "Farmaci",
+  "Meals": "Pasti",
+  "Companions": "Compagni",
+  "AI Assistant": "Assistente AI",
+  "Add Medication": "Aggiungi farmaco",
+  "PRESS FOR SOS": "SOS",
+  "Online": "Online",
+  "Type or speak how you are feeling...": "Scrivi o parla...",
+  "Save": "Salva",
+  "Cancel": "Annulla",
+  "Taken": "Assunto",
+  "Skipped": "Saltato",
+  "Pending": "In attesa",
+  "Toggle Theme": "Cambia tema",
+  "Sign Out": "Disconnettersi",
+    "companions": "Compagni",
+
+
+  "Welcome back": "Bentornato",
+  "Sign in to your account to continue.": "Accedi.",
+  "Email": "Email",
+  "your@email.com": "your@email.com",
+  "Password": "Password",
+  "••••••••": "••••••••",
+  "Sign In": "Accedi",
+  "Don't have an account? ": "Non hai un account? ",
+  "Sign Up": "Registrati",
+  "Please fill in all fields.": "Compila tutto.",
+  "Account created! Check your email to verify, then sign in.": "Account creato!",
+
+  "Create your account": "Crea account",
+  "Join SilverCare and take control of your health.": "Gestisci la tua salute.",
+  "Full Name": "Nome",
+  "Your name": "Il tuo nome",
+  "Create Account": "Crea account",
+  "Already have an account?": "Hai già un account?",
+
+  "Find a Companion": "Trova compagno",
+  "We match you with trusted companions to visit and spend quality time.": "Ti abbiniamo a compagni fidati.",
+  "✅ {} has been booked!": "✅ {} prenotato!",
+  "Booking failed: {}": "Errore: {}",
+  "Booked": "Prenotato",
+  "Book Companion": "Prenota",
+
+  "Overview": "Panoramica",
+  "Your daily health summary": "Riepilogo",
+  "{}% completed": "{}% completato",
+
+  "Health Status": "Stato salute",
+  "Managed": "Gestito",
+  "Good": "Buono",
+  "No conditions on file": "Nessun dato",
+
+  "Alerts History": "Storico",
+  "Emergency events logged": "Eventi registrati",
+
+  "Care Network": "Rete cura",
+  "Active bookings": "Prenotazioni attive",
+
+  "Today's Medication Progress": "Progressi",
+  "{} taken · {} remaining": "{} presi · {} rimasti",
+
+  "Health Profile Summary": "Profilo",
+  "Sugar": "Zucchero",
+  "BP": "Pressione",
+  "No health profile data yet.": "Nessun dato.",
+  "Complete your profile →": "Completa →",
+
+  "Have a safe and healthy day. Remember to take your medications on time.": "Buona giornata.",
+
+  "Quick access to emergency services": "Accesso rapido emergenza",
+  "Emergency SOS": "SOS emergenza",
+  "Press the SOS button to alert family, doctor and emergency services with your location.": "Premi SOS",
+
+  "SOS Sent!": "SOS inviato!",
+  "Emergency services and family have been notified with your location.": "Aiuto in arrivo",
+  "Done": "Fatto",
+  "📍 Getting your location....": "Posizione...",
+  "📞 Contacting emergency services...": "Contatto...",
+
+  "Quick Contacts": "Contatti",
+  "Ambulance": "Ambulanza",
+  "Police": "Polizia",
+  "Fire": "Vigili del fuoco",
+
+  "Alert History": "Storico",
+  "No emergency alerts": "Nessun allarme",
+
+  "Emergency subtitle": "Accesso rapido",
+  "PRESS": "PREMI",
+
+  "Health Profile": "Profilo salute",
+  "Your Health Profile": "Profilo",
+  "Keep your health data up to date for personalized AI advice.": "Aggiorna i dati.",
+
+  "Basic Information": "Base",
+  "Vital Signs": "Segni vitali",
+  "Medical History": "Storia medica",
+
+  "Age": "Età",
+  "Weight": "Peso",
+  "Height": "Altezza",
+  "Blood Sugar": "Glicemia",
+  "BP Systolic": "Sistolica",
+  "BP Diastolic": "Diastolica",
+
+  "Chronic Diseases": "Malattie croniche",
+  "Allergies": "Allergie",
+  "Notes": "Note",
+
+  "Save Health Profile": "Salva",
+
+  "yrs": "anni",
+  "kg": "kg",
+  "cm": "cm",
+  "mg/dL": "mg/dL",
+  "mmHg": "mmHg",
+
+  "e.g. Diabetes, Hypertension (comma separated)": "es: diabete",
+  "e.g. Penicillin, Shellfish": "es: penicillina",
+  "Any other relevant information...": "Altre info...",
+
+  "Error saving: {}": "Errore: {}",
+
+  "Healthy Meal Marketplace": "Pasti sani",
+  "Nutritious, medical-grade meals for your health condition.": "Pasti per salute.",
+  "Checkout": "Pagamento",
+  "Order placed! Your meals will be delivered shortly.": "Ordine inviato.",
+
+  "Track and manage your daily medications": "Gestione farmaci",
+  "name": "nome",
+  "dosage": "dosaggio",
+  "frequency": "frequenza",
+  "schedule_time": "orario",
+  "notes": "note",
+  "Add New Medication": "Aggiungi farmaco",
+  "Medication Name *": "Farmaco *",
+  "Dosage (e.g. 500mg)": "Dosaggio",
+  "Frequency (e.g. Twice daily)": "2 volte al giorno",
+  "Notes (Optional)": "Opzionale",
+  "Skip": "Salta",
+  "Marked as taken": "Segnato assunto"
+}

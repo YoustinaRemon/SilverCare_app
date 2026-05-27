@@ -12,12 +12,14 @@
   "Type or speak how you are feeling...": "Tippen oder sprechen...",
   "Save": "Speichern",
   "Cancel": "Abbrechen",
-  "Taken": "Eingenommen",
+  "taken": "Eingenommen",
   "Skipped": "Übersprungen",
   "Pending": "Ausstehend",
   "Toggle Theme": "Design wechseln",
   "Sign Out": "Abmelden",
-    "companions": "Begleiter",
+  "companions": "Begleiter",
+  "Taken": "Eingenommen",
+
 
 
   "Welcome back": "Willkommen zurück",
@@ -141,5 +143,36 @@
   "Frequency (e.g. Twice daily)": "2x täglich",
   "Notes (Optional)": "Optional",
   "Skip": "Überspringen",
-  "Marked as taken": "Als genommen markiert"
+  "Marked as taken": "Als genommen markiert",
+
+  
+  "Smart today, better tomorrow": "Heute klug, morgen besser",
+  "We care beyond distance,\nacross borders.": "Wir kümmern uns über Entfernungen hinweg,\nüber Grenzen hinweg.",
+  "Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.": "Eine Brücke zwischen Ägypten und der Schweiz durch Technologie, Mitgefühl und Vertrauen. Eine KI-gestützte Plattform zur Unterstützung älterer Menschen, die allein leben oder chronische Krankheiten haben.",
+  "Create Your Profile": "Erstelle dein Profil",
+  "Our Main Features": "Unsere Hauptfunktionen",
+  "We combine health, nutrition, emergency care and human companionship in one smart solution.": "Wir kombinieren Gesundheit, Ernährung, Notfallversorgung und menschliche Begleitung in einer intelligenten Lösung.",
+  "© 2026 SilverCare. All rights reserved.": "© 2026 SilverCare. Alle Rechte vorbehalten.",
+  "AI Health Assistant": "KI-Gesundheitsassistent",
+  "Personalized health advice, medication reminders and daily check-ins.": "Personalisierte Gesundheitsberatung, Medikamentenerinnerungen und tägliche Check-ins.",
+  "Healthy Meal Service": "Gesunde Mahlzeiten",
+  "Nutritious meals tailored to your health condition, delivered to your door.": "Nahrhafte Mahlzeiten, abgestimmt auf Ihren Gesundheitszustand, direkt zu Ihnen nach Hause geliefert.",
+  "Emergency Support": "Notfallhilfe",
+  "Instant AI assessment and connect you to doctors or emergency services.": "Sofortige KI-Bewertung und Verbindung zu Ärzten oder Notfalldiensten.",
+  "Companion Matching": "Begleiter-Matching",
+  "We match you with trusted companions to visit, help and spend quality time.": "Wir vermitteln vertrauenswürdige Begleiter für Besuche, Hilfe und gemeinsame Zeit.",
+
+
+  "completed": "Abgeschlossen",
+  "Today\n’s Medication Progress": "Heutiger\nMedikationsfortschritt",
+  "Payment Method": "Zahlungsmethode",
+  "Cash": "Bargeld",
+  "Credit Card": "Kreditkarte",
+  "Subtotal": "Zwischensumme",
+  "Delivery Fee": "Liefergebühr",
+  "Total": "Gesamtsumme",
+  "Confirm Order": "Bestellung Bestätigen",
+  "Payment Successful!": "Zahlung Erfolgreich!",
+  "Back to Menu": "Zurück zum Menü",
+  "Your order has been placed successfully and will be delivered soon.": "Ihre Bestellung wurde erfolgreich aufgegeben und wird in Kürze geliefert."
 }

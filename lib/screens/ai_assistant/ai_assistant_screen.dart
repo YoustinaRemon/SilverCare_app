@@ -3,7 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../theme/app_theme.dart';
+import '../../models/chat_message.dart';
+import "../../widgets/typing_indicator.dart";
+import "../../widgets/message_bubble.dart";
 
 class AIAssistantScreen extends StatefulWidget {
   const AIAssistantScreen({super.key});
@@ -14,22 +19,17 @@ class AIAssistantScreen extends StatefulWidget {
 class _AIAssistantScreenState extends State<AIAssistantScreen> {
   final _msgCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
-  final List<_Message> _messages = [];
+  final List<ChatMessage> _messages = [];
   bool _isLoading = false;
 
   final FlutterTts _flutterTts = FlutterTts();
-
-  static const _groqModel = 'llama-3.1-70b-versatile';
+  static const _groqModel = 'llama-3.3-70b-versatile';
 
   @override
   void initState() {
     super.initState();
     _initTts();
-    _messages.add(const _Message(
-      role: 'assistant',
-      content:
-          'Hello! I am your SilverCare AI health assistant. There are many delicious and nutritious options for your health. How can I help you today?',
-    ));
+    _loadMessages();
   }
 
   Future<void> _initTts() async {
@@ -42,6 +42,34 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   Future<void> _speak(String text) async {
     await _flutterTts.stop();
     await _flutterTts.speak(text);
+  }
+
+  Future<void> _loadMessages() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedMsgs = prefs.getStringList('chat_messages');
+
+    if (savedMsgs != null && savedMsgs.isNotEmpty) {
+      setState(() {
+        _messages.addAll(
+            savedMsgs.map((e) => ChatMessage.fromJson(jsonDecode(e))).toList());
+      });
+      _scrollToBottom();
+    } else {
+      setState(() {
+        _messages.add(const ChatMessage(
+          role: 'assistant',
+          content:
+              'Hello! I am your SilverCare AI health assistant. There are many delicious and nutritious options for your health. How can I help you today?',
+        ));
+      });
+      _saveMessages();
+    }
+  }
+
+  Future<void> _saveMessages() async {
+    final prefs = await SharedPreferences.getInstance();
+    final encodedList = _messages.map((m) => jsonEncode(m.toJson())).toList();
+    await prefs.setStringList('chat_messages', encodedList);
   }
 
   @override
@@ -69,38 +97,39 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     if (text.isEmpty || _isLoading) return;
 
     setState(() {
-      _messages.add(_Message(role: 'user', content: text));
+      _messages.add(ChatMessage(role: 'user', content: text));
       _isLoading = true;
     });
+    _saveMessages();
     _msgCtrl.clear();
     _scrollToBottom();
 
     try {
       final apiKey = dotenv.env['GROQ_API_KEY'] ?? '';
+      if (apiKey.isEmpty) throw Exception("API Key missing");
 
-      if (apiKey.isEmpty) {
-        throw Exception("API Key is missing in .env file");
-      }
-
-      final response = await http.post(
-        Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-        },
-        body: jsonEncode({
-          'model': _groqModel,
-          'max_tokens': 1024,
-          'messages': [
-            {
-              'role': 'system',
-              'content':
-                  'You are a compassionate AI health assistant for elderly users of SilverCare platform. Provide helpful, clear, and empathetic health advice. Use simple sentences.',
+      // ⬅️ إضافة Timeout للطلب (مثلاً 20 ثانية)
+      final response = await http
+          .post(
+            Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $apiKey',
             },
-            ..._messages.map((m) => {'role': m.role, 'content': m.content}),
-          ],
-        }),
-      );
+            body: jsonEncode({
+              'model': _groqModel,
+              'max_tokens': 1024,
+              'messages': [
+                {
+                  'role': 'system',
+                  'content': 'You are a compassionate AI health assistant...'
+                },
+                ..._messages.map((m) => {'role': m.role, 'content': m.content}),
+              ],
+            }),
+          )
+          .timeout(
+              const Duration(seconds: 20)); // ⬅️ إذا زاد الوقت عن 20 ثانية يوقف
 
       if (!mounted) return;
 
@@ -108,27 +137,27 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         final data = jsonDecode(response.body);
         final reply = data['choices'][0]['message']['content'] as String? ?? '';
         setState(() {
-          _messages.add(_Message(role: 'assistant', content: reply));
+          _messages.add(ChatMessage(role: 'assistant', content: reply));
           _isLoading = false;
         });
+        _saveMessages();
       } else {
+        // طباعة الخطأ في الكونسول عشان نعرف السبب
+        debugPrint('🚨 Error: ${response.statusCode} - ${response.body}');
         setState(() {
-          _messages.add(const _Message(
-            role: 'assistant',
-            content:
-                '⚠️ I\'m having trouble connecting. Please check your connection or try again later.',
-          ));
+          _messages.add(const ChatMessage(
+              role: 'assistant',
+              content: '⚠️ Server error. Please try again.'));
           _isLoading = false;
         });
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('🚨 Exception: $e'); // ⬅️ طباعة الخطأ
       if (mounted) {
         setState(() {
-          _messages.add(const _Message(
-            role: 'assistant',
-            content:
-                '⚠️ Error connecting to the AI. Please make sure your network is working.',
-          ));
+          _messages.add(const ChatMessage(
+              role: 'assistant',
+              content: '⚠️ Connection timeout or network error.'));
           _isLoading = false;
         });
       }
@@ -196,6 +225,24 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('chat_messages');
+              setState(() {
+                _messages.clear();
+                _messages.add(const ChatMessage(
+                  role: 'assistant',
+                  content:
+                      'Hello! I am your SilverCare AI health assistant. There are many delicious and nutritious options for your health. How can I help you today?',
+                ));
+              });
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Container(
         color: theme.scaffoldBackgroundColor,
@@ -208,25 +255,10 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                 itemCount: _messages.length + (_isLoading ? 1 : 0),
                 itemBuilder: (_, i) {
                   if (i == _messages.length) {
-                    return Row(children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: theme.cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.border),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(
-                              3,
-                              (j) =>
-                                  _Dot(delay: Duration(milliseconds: j * 200))),
-                        ),
-                      ),
-                    ]);
+                    return const TypingIndicator(); // ⬅️ استدعاء الـ Widget الجديدة
                   }
-                  return _MessageBubble(
+                  return MessageBubble(
+                    // ⬅️ استدعاء الـ Widget الجديدة
                     msg: _messages[i],
                     onPlayAudio: _messages[i].role == 'assistant'
                         ? () => _speak(_messages[i].content)
@@ -309,141 +341,4 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       ),
     );
   }
-}
-
-class _Message {
-  final String role, content;
-  const _Message({required this.role, required this.content});
-}
-
-class _MessageBubble extends StatelessWidget {
-  final _Message msg;
-  final VoidCallback? onPlayAudio;
-
-  const _MessageBubble({required this.msg, this.onPlayAudio});
-
-  @override
-  Widget build(BuildContext context) {
-    final isUser = msg.role == 'user';
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                color: isUser ? AppTheme.primary : theme.cardColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 16),
-                ),
-                border: isUser
-                    ? null
-                    : const Border.fromBorderSide(
-                        BorderSide(color: AppTheme.border)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    msg.content,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isUser
-                          ? Colors.white
-                          : theme.textTheme.bodyLarge?.color,
-                      height: 1.6,
-                      fontSize: 15,
-                    ),
-                  ),
-                  if (!isUser && onPlayAudio != null) ...[
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: onPlayAudio,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppTheme.secondary.withValues(alpha: .1),
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.volume_up_rounded,
-                                  size: 16, color: AppTheme.secondary),
-                              SizedBox(width: 4),
-                              Text('Listen',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppTheme.secondary,
-                                      fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Dot extends StatefulWidget {
-  final Duration delay;
-  const _Dot({required this.delay});
-  @override
-  State<_Dot> createState() => _DotState();
-}
-
-class _DotState extends State<_Dot> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _anim;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600))
-      ..repeat(reverse: true);
-    _anim = Tween(begin: 0.3, end: 1.0)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-    Future.delayed(widget.delay, () {
-      if (mounted) _ctrl.forward();
-    });
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 3),
-        child: FadeTransition(
-          opacity: _anim,
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-                color: AppTheme.mutedFg, shape: BoxShape.circle),
-          ),
-        ),
-      );
 }

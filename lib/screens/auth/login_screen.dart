@@ -31,6 +31,31 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (_loading) return;
 
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        _error = 'Please fill in all fields.'.tr();
+      });
+      return;
+    }
+
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) {
+      setState(() {
+        _error = 'Please enter a valid email address.'.tr();
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setState(() {
+        _error = 'Password must be at least 6 characters.'.tr();
+      });
+      return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -39,8 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.read<AuthService>();
 
     final error = await auth.signIn(
-      _emailCtrl.text.trim(),
-      _passwordCtrl.text,
+      email,
+      password,
     );
 
     if (!mounted) return;
@@ -62,21 +87,30 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
-
-              GestureDetector(
-                onTap: () => context.go('/'),
-                child: Text(
-                  'SilverCare',
-                  style: theme.textTheme.displayMedium,
-                ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.centerLeft,
+                    onPressed: () => context.go('/'),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.go('/'),
+                    child: Text(
+                      'SilverCare',
+                      style: theme.textTheme.displayMedium,
+                    ),
+                  ),
+                ],
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
               Text(
                 'Welcome back'.tr(),
@@ -204,6 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

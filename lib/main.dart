@@ -10,7 +10,7 @@ import 'services/auth_service.dart';
 import 'providers/theme_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
-import 'screens/landing_screen.dart';
+import 'screens/landing_screen/landing_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/medications/medications_screen.dart';
 import 'screens/emergency/emergency_screen.dart';
@@ -51,10 +51,10 @@ void main() async {
       ),
     );
   } catch (e) {
-    print("====================================");
-    print("🚨 ERROR IN INITIALIZATION 🚨");
-    print(e.toString());
-    print("====================================");
+    debugPrint("====================================");
+    debugPrint("🚨 ERROR IN INITIALIZATION 🚨");
+    debugPrint(e.toString());
+    debugPrint("====================================");
 
     runApp(
       MaterialApp(

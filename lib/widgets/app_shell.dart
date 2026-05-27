@@ -14,17 +14,21 @@ class AppShell extends StatelessWidget {
   static final _navItems = [
     const _NavItem(
         icon: Icons.dashboard_rounded, label: 'Dashboard', path: '/dashboard'),
-    _NavItem(
+    const _NavItem(
         icon: Icons.medical_services_rounded,
-        label: 'Medications'.tr(),
+        label: 'Medications',
         path: '/medications'),
-    _NavItem(
-        icon: Icons.sos_rounded, label: 'Emergency'.tr(), path: '/emergency'),
-    _NavItem(
-        icon: Icons.restaurant_rounded, label: 'Meals'.tr(), path: '/meals'),
-    _NavItem(
+    const _NavItem(
+        // ✅ تم التصليح هنا
+        icon: Icons.sos_rounded,
+        label: 'Emergency',
+        path: '/emergency'),
+    const _NavItem(
+        icon: Icons.restaurant_rounded, label: 'Meals', path: '/meals'),
+    const _NavItem(
+        // ✅ وتم التصليح هنا
         icon: Icons.smart_toy_rounded,
-        label: 'AI Assistant'.tr(),
+        label: 'AI Assistant',
         path: '/ai-assistant'),
   ];
 
@@ -59,7 +63,7 @@ class AppShell extends StatelessWidget {
                   leading: const Icon(Icons.group_rounded),
                   title: Text("Companions".tr()),
                   onTap: () {
-                    Navigator.pop(context); // إغلاق المنيو
+                    Navigator.pop(context);
                     context.go('/companions');
                   },
                 ),
@@ -74,8 +78,11 @@ class AppShell extends StatelessWidget {
                         : Icons.nights_stay,
                   ),
                   title: Text("Toggle Theme".tr()),
-                  onTap: () =>
-                      context.read<ThemeProvider>().toggleTheme(context),
+                  onTap: () {
+                    Navigator.pop(
+                        context); // يفضل نقفل المنيو بعد ما نغير الثيم
+                    context.read<ThemeProvider>().toggleTheme(context);
+                  },
                 ),
               ),
               PopupMenuItem(
@@ -103,7 +110,8 @@ class AppShell extends StatelessWidget {
               destinations: _navItems
                   .map((item) => NavigationRailDestination(
                         icon: Icon(item.icon),
-                        label: Text(item.label),
+                        label: Text(
+                            item.label.tr()), // ✅ ضفتلك .tr() هنا عشان تترجم
                       ))
                   .toList(),
             ),
@@ -114,7 +122,7 @@ class AppShell extends StatelessWidget {
           ? null
           : NavigationBar(
               selectedIndex: selectedIdx,
-              onDestinationSelected: (i) => context.go(_navItems[i].path.tr()),
+              onDestinationSelected: (i) => context.go(_navItems[i].path),
               destinations: _navItems
                   .map((item) => NavigationDestination(
                         icon: Icon(item.icon),

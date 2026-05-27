@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import 'health_profile_view.dart'; // ⬅️ استيراد وضع العرض
+import 'health_profile_edit.dart'; // ⬅️ استيراد وضع التعديل
 
 class HealthProfileScreen extends StatefulWidget {
   const HealthProfileScreen({super.key});
@@ -14,11 +16,9 @@ class HealthProfileScreen extends StatefulWidget {
 }
 
 class _HealthProfileScreenState extends State<HealthProfileScreen> {
-  final _db = Supabase.instance.client;
-
   bool _loading = true;
   bool _saving = false;
-  bool _saved = false;
+  bool _isEditing = false;
 
   final _ageCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
@@ -33,7 +33,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadLocalData();
   }
 
   @override
@@ -54,78 +54,72 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
     super.dispose();
   }
 
-  Future<void> _load() async {
+  Future<void> _loadLocalData() async {
     setState(() => _loading = true);
 
-    final user = context.read<AuthService>().currentUser;
-    if (user == null) {
-      setState(() => _loading = false);
-      return;
-    }
-
     try {
-      final data = await _db
-          .from('health_profiles')
-          .select()
-          .eq('id', user.id)
-          .maybeSingle();
+      final prefs = await SharedPreferences.getInstance();
 
-      if (data != null && mounted) {
-        _ageCtrl.text = '${data['age'] ?? ''}';
-        _weightCtrl.text = '${data['weight_kg'] ?? ''}';
-        _heightCtrl.text = '${data['height_cm'] ?? ''}';
-        _bloodSugarCtrl.text = '${data['blood_sugar'] ?? ''}';
-        _bpSystolicCtrl.text = '${data['blood_pressure_systolic'] ?? ''}';
-        _bpDiastolicCtrl.text = '${data['blood_pressure_diastolic'] ?? ''}';
-        _chronicCtrl.text = data['chronic_diseases'] ?? '';
-        _allergiesCtrl.text = data['allergies'] ?? '';
-        _notesCtrl.text = data['notes'] ?? '';
+      _ageCtrl.text = prefs.getString('hp_age') ?? '';
+      _weightCtrl.text = prefs.getString('hp_weight') ?? '';
+      _heightCtrl.text = prefs.getString('hp_height') ?? '';
+      _bloodSugarCtrl.text = prefs.getString('hp_blood_sugar') ?? '';
+      _bpSystolicCtrl.text = prefs.getString('hp_bp_sys') ?? '';
+      _bpDiastolicCtrl.text = prefs.getString('hp_bp_dia') ?? '';
+      _chronicCtrl.text = prefs.getString('hp_chronic') ?? '';
+      _allergiesCtrl.text = prefs.getString('hp_allergies') ?? '';
+      _notesCtrl.text = prefs.getString('hp_notes') ?? '';
+
+      if (_ageCtrl.text.isEmpty &&
+          _weightCtrl.text.isEmpty &&
+          _chronicCtrl.text.isEmpty) {
+        _isEditing = true;
+      } else {
+        _isEditing = false;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Load Error: $e');
+    }
 
     if (mounted) setState(() => _loading = false);
   }
 
-  Future<void> _save() async {
+  Future<void> _saveLocalData() async {
     setState(() => _saving = true);
 
-    final user = context.read<AuthService>().currentUser;
-    if (user == null) {
-      setState(() => _saving = false);
-      return;
-    }
-
     try {
-      await _db.from('health_profiles').upsert({
-        'id': user.id,
-        'age': int.tryParse(_ageCtrl.text),
-        'weight_kg': double.tryParse(_weightCtrl.text),
-        'height_cm': double.tryParse(_heightCtrl.text),
-        'blood_sugar': double.tryParse(_bloodSugarCtrl.text),
-        'blood_pressure_systolic': int.tryParse(_bpSystolicCtrl.text),
-        'blood_pressure_diastolic': int.tryParse(_bpDiastolicCtrl.text),
-        'chronic_diseases': _chronicCtrl.text.trim(),
-        'allergies': _allergiesCtrl.text.trim(),
-        'notes': _notesCtrl.text.trim(),
-        'updated_at': DateTime.now().toIso8601String(),
-      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setString('hp_age', _ageCtrl.text.trim());
+      await prefs.setString('hp_weight', _weightCtrl.text.trim());
+      await prefs.setString('hp_height', _heightCtrl.text.trim());
+      await prefs.setString('hp_blood_sugar', _bloodSugarCtrl.text.trim());
+      await prefs.setString('hp_bp_sys', _bpSystolicCtrl.text.trim());
+      await prefs.setString('hp_bp_dia', _bpDiastolicCtrl.text.trim());
+      await prefs.setString('hp_chronic', _chronicCtrl.text.trim());
+      await prefs.setString('hp_allergies', _allergiesCtrl.text.trim());
+      await prefs.setString('hp_notes', _notesCtrl.text.trim());
 
       if (mounted) {
         setState(() {
           _saving = false;
-          _saved = true;
+          _isEditing = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile saved successfully!'),
+            backgroundColor: AppTheme.primary,
+          ),
+        );
       }
-
-      Future.delayed(
-        const Duration(seconds: 2),
-        () => mounted ? setState(() => _saved = false) : null,
-      );
     } catch (e) {
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('error_saving'.tr(args: ['$e']))),
+          SnackBar(
+            content: Text('error_saving'.tr(args: ['$e'])),
+            backgroundColor: AppTheme.destructive,
+          ),
         );
       }
     }
@@ -133,156 +127,59 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final user = context.read<AuthService>().currentUser;
+    final userName = user?.userMetadata?['full_name'] ??
+        user?.userMetadata?['name'] ??
+        'User';
+    final userEmail = user?.email ?? '';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Health Profile'.tr()),
+        title: Text(_isEditing ? 'Edit Profile'.tr() : 'Health Profile'.tr()),
         actions: [
-          if (_saved)
-            const Padding(
-              padding: EdgeInsets.only(right: 16),
-              child: Icon(Icons.check_circle_rounded, color: AppTheme.primary),
+          if (!_isEditing)
+            IconButton(
+              icon: const Icon(Icons.edit_rounded, color: AppTheme.primary),
+              onPressed: () => setState(() => _isEditing = true),
+            ),
+          if (_isEditing && _ageCtrl.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: _loadLocalData,
             ),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Your Health Profile'.tr(),
-                    style: theme.textTheme.displayMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Keep your health data up to date for personalized AI advice.'
-                        .tr(),
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: AppTheme.mutedFg),
-                  ),
-                  const SizedBox(height: 24),
-                  _Section('Basic Information'.tr()),
-                  Row(children: [
-                    Expanded(
-                      child: _Field('Age'.tr(), _ageCtrl,
-                          suffix: 'yrs'.tr(), type: TextInputType.number),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _Field('Weight'.tr(), _weightCtrl,
-                          suffix: 'kg'.tr(), type: TextInputType.number),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _Field('Height'.tr(), _heightCtrl,
-                          suffix: 'cm'.tr(), type: TextInputType.number),
-                    ),
-                  ]),
-                  const SizedBox(height: 20),
-                  _Section('Vital Signs'.tr()),
-                  _Field('Blood Sugar'.tr(), _bloodSugarCtrl,
-                      suffix: 'mg_dl'.tr(), type: TextInputType.number),
-                  const SizedBox(height: 12),
-                  Row(children: [
-                    Expanded(
-                      child: _Field('BP Systolic'.tr(), _bpSystolicCtrl,
-                          suffix: 'mmhg'.tr(), type: TextInputType.number),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _Field('BP Diastolic'.tr(), _bpDiastolicCtrl,
-                          suffix: 'mmhg'.tr(), type: TextInputType.number),
-                    ),
-                  ]),
-                  const SizedBox(height: 20),
-                  _Section('Medical History'.tr()),
-                  _Field(
-                    'Chronic Diseases'.tr(),
-                    _chronicCtrl,
-                    hint: 'chronic_hint'.tr(),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 12),
-                  _Field(
-                    'Allergies'.tr(),
-                    _allergiesCtrl,
-                    hint: 'allergies_hint'.tr(),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 12),
-                  _Field(
-                    'Notes'.tr(),
-                    _notesCtrl,
-                    hint: 'notes_hint'.tr(),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _saving ? null : _save,
-                      child: _saving
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text('Save Health Profile'.tr()),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  final String title;
-  const _Section(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppTheme.primary,
-            ),
-      ),
-    );
-  }
-}
-
-class _Field extends StatelessWidget {
-  final String label;
-  final TextEditingController ctrl;
-  final String? suffix, hint;
-  final TextInputType type;
-  final int maxLines;
-
-  const _Field(
-    this.label,
-    this.ctrl, {
-    this.suffix,
-    this.hint,
-    this.type = TextInputType.text,
-    this.maxLines = 1,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: ctrl,
-      keyboardType: type,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        suffixText: suffix,
-      ),
+          : _isEditing
+              // ⬅️ نداء لملف التعديل
+              ? HealthProfileEdit(
+                  isSaving: _saving,
+                  onSave: _saveLocalData,
+                  ageCtrl: _ageCtrl,
+                  weightCtrl: _weightCtrl,
+                  heightCtrl: _heightCtrl,
+                  bloodSugarCtrl: _bloodSugarCtrl,
+                  bpSystolicCtrl: _bpSystolicCtrl,
+                  bpDiastolicCtrl: _bpDiastolicCtrl,
+                  chronicCtrl: _chronicCtrl,
+                  allergiesCtrl: _allergiesCtrl,
+                  notesCtrl: _notesCtrl,
+                )
+              // ⬅️ نداء لملف العرض
+              : HealthProfileView(
+                  userName: userName,
+                  userEmail: userEmail,
+                  ageCtrl: _ageCtrl,
+                  weightCtrl: _weightCtrl,
+                  heightCtrl: _heightCtrl,
+                  bloodSugarCtrl: _bloodSugarCtrl,
+                  bpSystolicCtrl: _bpSystolicCtrl,
+                  bpDiastolicCtrl: _bpDiastolicCtrl,
+                  chronicCtrl: _chronicCtrl,
+                  allergiesCtrl: _allergiesCtrl,
+                  notesCtrl: _notesCtrl,
+                ),
     );
   }
 }

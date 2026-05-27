@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:intl/intl.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -30,7 +29,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   Future<void> _loadAlerts() async {
     setState(() => _loadingHistory = true);
-    final user = context.read<AuthService>().currentUser;
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.currentUser;
     if (user == null) {
       setState(() => _loadingHistory = false);
       return;
@@ -70,10 +70,11 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     }
 
     if (!mounted) return;
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.currentUser;
     setState(() => _sosState = SOSState.contacting);
     await Future.delayed(const Duration(seconds: 2));
 
-    final user = context.read<AuthService>().currentUser;
     if (user == null || !mounted) return;
 
     try {

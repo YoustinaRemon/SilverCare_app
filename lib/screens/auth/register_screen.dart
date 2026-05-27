@@ -34,11 +34,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (_loading) return;
 
-    if (_nameCtrl.text.isEmpty ||
-        _emailCtrl.text.isEmpty ||
-        _passwordCtrl.text.isEmpty) {
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
+
+    // 1. التحقق من إن الحقول مش فاضية
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
       setState(() {
         _error = 'Please fill in all fields.'.tr();
+        _success = null;
+      });
+      return;
+    }
+
+    // 2. التحقق من الاسم (حروف ومسافات فقط، يرفض الأرقام والرموز)
+    final nameRegex = RegExp(r'^[\p{L}\s]+$', unicode: true);
+    if (!nameRegex.hasMatch(name)) {
+      setState(() {
+        _error = 'Name must contain only letters and spaces.'.tr();
+        _success = null;
+      });
+      return;
+    }
+
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) {
+      setState(() {
+        _error = 'Please enter a valid email address.'.tr();
+        _success = null;
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setState(() {
+        _error = 'Password must be at least 6 characters.'.tr();
+        _success = null;
       });
       return;
     }
@@ -52,9 +83,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final auth = context.read<AuthService>();
 
     final error = await auth.signUp(
-      _emailCtrl.text.trim(),
-      _passwordCtrl.text,
-      _nameCtrl.text.trim(),
+      email,
+      password,
+      name,
     );
 
     if (!mounted) return;
@@ -80,19 +111,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
-              GestureDetector(
-                onTap: () => context.go('/'),
-                child: Text(
-                  'SilverCare',
-                  style: theme.textTheme.displayMedium,
-                ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.centerLeft,
+                    onPressed: () => context.go('/'),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => context.go('/'),
+                    child: Text(
+                      'SilverCare',
+                      style: theme.textTheme.displayMedium,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 'Create your account'.tr(),
                 style: theme.textTheme.headlineLarge,
@@ -185,7 +227,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   GestureDetector(
                     onTap: () => context.go('/login'),
                     child: Text(
-                      'sign_in'.tr(),
+                      'sign_in'
+                          .tr(), // غيرتها لـ sign_in عشان تشتغل مع الـ JSON
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppTheme.primary,
                         fontWeight: FontWeight.w600,
@@ -195,6 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

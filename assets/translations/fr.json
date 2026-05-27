@@ -12,12 +12,11 @@
   "Type or speak how you are feeling...": "Parlez ou écrivez...",
   "Save": "Enregistrer",
   "Cancel": "Annuler",
-  "Taken": "Pris",
   "Skipped": "Ignoré",
   "Pending": "En attente",
   "Toggle Theme": "Changer le thème",
   "Sign Out": "Se déconnecter",
-    "companions": "Compagnons",
+  "companions": "Compagnons",
 
 
   "Welcome back": "Bienvenue",
@@ -141,5 +140,38 @@
   "Frequency (e.g. Twice daily)": "2 fois/jour",
   "Notes (Optional)": "Optionnel",
   "Skip": "Ignorer",
-  "Marked as taken": "Marqué pris"
+  "Marked as taken": "Marqué pris",
+  
+
+  "Smart today, better tomorrow": "Intelligent aujourd’hui, meilleur demain",
+  "We care beyond distance,\nacross borders.": "Nous prenons soin de vous au-delà des distances,\nà travers les frontières.",
+  "Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.": "Un pont entre l’Égypte et la Suisse grâce à la technologie, la compassion et la confiance. Une plateforme alimentée par l’IA conçue pour soutenir les personnes âgées vivant seules ou atteintes de maladies chroniques.",
+  "Create Your Profile": "Créez votre profil",
+  "Our Main Features": "Nos principales fonctionnalités",
+  "We combine health, nutrition, emergency care and human companionship in one smart solution.": "Nous combinons santé, nutrition, soins d’urgence et compagnie humaine dans une solution intelligente unique.",
+  "© 2026 SilverCare. All rights reserved.": "© 2026 SilverCare. Tous droits réservés.",
+  "AI Health Assistant": "Assistant santé IA",
+  "Personalized health advice, medication reminders and daily check-ins.": "Conseils de santé personnalisés, rappels de médicaments et suivi quotidien.",
+  "Healthy Meal Service": "Service de repas sains",
+  "Nutritious meals tailored to your health condition, delivered to your door.": "Repas nutritifs adaptés à votre état de santé, livrés chez vous.",
+  "Emergency Support": "Assistance d’urgence",
+  "Instant AI assessment and connect you to doctors or emergency services.": "Évaluation instantanée par IA et connexion aux médecins ou services d’urgence.",
+  "Companion Matching": "Mise en relation avec un compagnon",
+  "We match you with trusted companions to visit, help and spend quality time.": "Nous vous mettons en relation avec des compagnons de confiance pour vous rendre visite, vous aider et passer du temps.",
+
+  "Taken": "Pris",
+  "taken": "Pris",
+  "completed": "Terminé",
+  "Today\n’s Medication Progress": "Progrès des Médicaments\nd'Aujourd'hui",
+  "Payment Method": "Moyen de Paiement",
+  "Cash": "Espèces",
+  "Credit Card": "Carte de Crédit",
+  "Subtotal": "Sous-total",
+  "Delivery Fee": "Frais de Livraison",
+  "Total": "Total",
+  "Confirm Order": "Confirmer la Commande",
+  "Payment Successful!": "Paiement Réussi !",
+  "Back to Menu": "Retour au Menu",
+  "Your order has been placed successfully and will be delivered soon.": "Votre commande a été passée avec succès et sera livrée sous peu."
+
 }

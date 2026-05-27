@@ -11,12 +11,14 @@
   "Type or speak how you are feeling...": "اكتب أو تحدث عن شعورك...",
   "Save": "حفظ",
   "Cancel": "إلغاء",
-  "Taken": "تم تناوله",
+  "taken": "تم تناوله",
   "Skipped": "تم تخطيه",
   "Pending": "قيد الانتظار",
   "Toggle Theme": "تبديل الوضع",
   "Sign Out": "تسجيل الخروج",
-    "companions": "المرافقين",
+  "companions": "المرافقين",
+  "Taken": "تم تناوله",
+
 
 
   "Welcome back": "مرحبًا بعودتك",
@@ -139,5 +141,36 @@
   "Frequency (e.g. Twice daily)": "مرتين يوميًا",
   "Notes (Optional)": "ملاحظات اختيارية",
   "Skip": "تخطي",
-  "Marked as taken": "تم التناول"
+  "Marked as taken": "تم التناول",
+
+  
+  "Smart today, better tomorrow": "ذكي اليوم، أفضل غدًا",
+  "We care beyond distance,\nacross borders.": "نهتم بك من بعيد\nعبر الحدود.",
+  "Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.": "نربط بين مصر وسويسرا بالتكنولوجيا والرحمة والثقة. منصة مدعومة بالذكاء الاصطناعي لدعم كبار السن الذين يعيشون بمفردهم أو يعانون من أمراض مزمنة.",
+  "Create Your Profile": "أنشئ ملفك الشخصي",
+  "Our Main Features": "أهم مميزاتنا",
+  "We combine health, nutrition, emergency care and human companionship in one smart solution.": "نجمع بين الصحة والتغذية والرعاية الطارئة والرفقة الإنسانية في حل ذكي واحد.",
+  "© 2026 SilverCare. All rights reserved.": "© 2026 SilverCare. جميع الحقوق محفوظة.",
+  "AI Health Assistant": "مساعد صحي بالذكاء الاصطناعي",
+  "Personalized health advice, medication reminders and daily check-ins.": "نصائح صحية مخصصة، تذكير بالأدوية، ومتابعة يومية.",
+  "Healthy Meal Service": "خدمة وجبات صحية",
+  "Nutritious meals tailored to your health condition, delivered to your door.": "وجبات مغذية مصممة حسب حالتك الصحية ويتم توصيلها إلى بابك.",
+  "Emergency Support": "الدعم الطارئ",
+  "Instant AI assessment and connect you to doctors or emergency services.": "تقييم فوري بالذكاء الاصطناعي وربطك بالأطباء أو خدمات الطوارئ.",
+  "Companion Matching": "توفير رفيق مناسب",
+  "We match you with trusted companions to visit, help and spend quality time.": "نوفّر لك رفقاء موثوقين للزيارة والمساعدة وقضاء وقت ممتع.",
+
+  "completed": "مكتمل",
+  "Today\n’s Medication Progress": "تقدم الأدوية اليوم",
+  "Payment Method": "طريقة الدفع",
+  "Cash": "نقدي (كاش)",
+  "Credit Card": "بطاقة ائتمان",
+  "Subtotal": "المجموع الفرعي",
+  "Delivery Fee": "رسوم التوصيل",
+  "Total": "الإجمالي المتبقي",
+  "Confirm Order": "تأكيد الطلب",
+  "Payment Successful!": "تم الدفع بنجاح!",
+  "Back to Menu": "العودة للقائمة",
+  "Your order has been placed successfully and will be delivered soon.": "تم تقديم طلبك بنجاح وسيتم توصيله قريباً."
+
 }

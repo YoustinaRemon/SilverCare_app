@@ -11,12 +11,14 @@
   "Type or speak how you are feeling...": "Type or speak how you are feeling...",
   "Save": "Save",
   "Cancel": "Cancel",
-  "Taken": "Taken",
+  "taken": "taken",
   "Skipped": "Skipped",
   "Pending": "Pending",
   "Toggle Theme": "Toggle Theme",
   "Sign Out": "Sign Out",
-    "companions": "Companions",
+  "companions": "Companions",
+  "Taken": "taken",
+
 
 
   "Welcome back": "Welcome back",
@@ -127,5 +129,35 @@
   "Frequency (e.g. Twice daily)": "Frequency (e.g. Twice daily)",
   "Notes (Optional)": "Notes (Optional)",
   "Skip": "Skip",
-  "Marked as taken": "Marked as taken"
+  "Marked as taken": "Marked as taken",
+
+  
+  "Smart today, better tomorrow": "Smart today, better tomorrow",
+  "We care beyond distance,\nacross borders.": "We care beyond distance,\nacross borders.",
+  "Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.": "Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.",
+  "Create Your Profile": "Create Your Profile",
+  "Our Main Features": "Our Main Features",
+  "We combine health, nutrition, emergency care and human companionship in one smart solution.": "We combine health, nutrition, emergency care and human companionship in one smart solution.",
+  "© 2026 SilverCare. All rights reserved.": "© 2026 SilverCare. All rights reserved.",
+  "AI Health Assistant": "AI Health Assistant",
+  "Personalized health advice, medication reminders and daily check-ins.": "Personalized health advice, medication reminders and daily check-ins.",
+  "Healthy Meal Service": "Healthy Meal Service",
+  "Nutritious meals tailored to your health condition, delivered to your door.": "Nutritious meals tailored to your health condition, delivered to your door.",
+  "Emergency Support": "Emergency Support",
+  "Instant AI assessment and connect you to doctors or emergency services.": "Instant AI assessment and connect you to doctors or emergency services.",
+  "Companion Matching": "Companion Matching",
+  "We match you with trusted companions to visit, help and spend quality time.": "We match you with trusted companions to visit, help and spend quality time.",
+
+  "completed": "Completed",
+  "Today\n’s Medication Progress": "Today's Medication Progress",
+  "Payment Method": "Payment Method",
+  "Cash": "Cash",
+  "Credit Card": "Credit Card",
+  "Subtotal": "Subtotal",
+  "Delivery Fee": "Delivery Fee",
+  "Total": "Total",
+  "Confirm Order": "Confirm Order",
+  "Payment Successful!": "Payment Successful!",
+  "Back to Menu": "Back to Menu",
+  "Your order has been placed successfully and will be delivered soon.": "Your order has been placed successfully and will be delivered soon."
 }

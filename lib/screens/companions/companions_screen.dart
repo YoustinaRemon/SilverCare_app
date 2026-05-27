@@ -99,7 +99,9 @@ class _CompanionsScreenState extends State<CompanionsScreen> {
   }
 
   Future<void> _book(String companionId, String name) async {
-    final user = context.read<AuthService>().currentUser;
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    final user = authService.currentUser;
 
     if (user == null) return;
 
@@ -131,7 +133,7 @@ class _CompanionsScreenState extends State<CompanionsScreen> {
         },
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
             'Booking failed'.tr(args: ['$e']),

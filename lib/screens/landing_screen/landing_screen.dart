@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../theme/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/language_picker.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -10,6 +12,41 @@ class LandingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
+
+    final features = [
+      _Feature(
+        icon: Icons.smart_toy_rounded,
+        title: 'AI Health Assistant'.tr(),
+        description:
+            'Personalized health advice, medication reminders and daily check-ins.'
+                .tr(),
+        color: AppTheme.primary,
+      ),
+      _Feature(
+        icon: Icons.restaurant_rounded,
+        title: 'Healthy Meal Service'.tr(),
+        description:
+            'Nutritious meals tailored to your health condition, delivered to your door.'
+                .tr(),
+        color: const Color(0xFF4CAF50),
+      ),
+      _Feature(
+        icon: Icons.local_hospital_rounded,
+        title: 'Emergency Support'.tr(),
+        description:
+            'Instant AI assessment and connect you to doctors or emergency services.'
+                .tr(),
+        color: AppTheme.destructive,
+      ),
+      _Feature(
+        icon: Icons.group_rounded,
+        title: 'Companion Matching'.tr(),
+        description:
+            'We match you with trusted companions to visit, help and spend quality time.'
+                .tr(),
+        color: AppTheme.secondary,
+      ),
+    ];
 
     return Scaffold(
       body: SafeArea(
@@ -24,9 +61,15 @@ class LandingScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('SilverCare', style: theme.textTheme.displayMedium),
-                    OutlinedButton(
-                      onPressed: () => context.go('/login'),
-                      child: const Text('Sign In'),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const LanguagePicker(),
+                        OutlinedButton(
+                          onPressed: () => context.go('/login'),
+                          child: Text('Sign In'.tr()),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -63,7 +106,7 @@ class LandingScreen extends StatelessWidget {
                               size: 16, color: AppTheme.primary),
                           const SizedBox(width: 8),
                           Text(
-                            'Smart today, better tomorrow',
+                            'Smart today, better tomorrow'.tr(),
                             style: theme.textTheme.bodySmall?.copyWith(
                                 color: AppTheme.primary,
                                 fontWeight: FontWeight.w600),
@@ -79,7 +122,7 @@ class LandingScreen extends StatelessWidget {
 
                     // Headline
                     Text(
-                      'We care beyond distance,\nacross borders.',
+                      'We care beyond distance,\nacross borders.'.tr(),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.displayLarge?.copyWith(
                         height: 1.2,
@@ -94,7 +137,8 @@ class LandingScreen extends StatelessWidget {
 
                     // Subtitle
                     Text(
-                      'Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.',
+                      'Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.'
+                          .tr(),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyLarge
                           ?.copyWith(color: AppTheme.mutedFg, height: 1.6),
@@ -112,7 +156,7 @@ class LandingScreen extends StatelessWidget {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () => context.go('/register'),
-                            child: const Text('Create Your Profile'),
+                            child: Text('Create Your Profile'.tr()),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -120,7 +164,7 @@ class LandingScreen extends StatelessWidget {
                           width: double.infinity,
                           child: OutlinedButton(
                             onPressed: () => context.go('/login'),
-                            child: const Text('Sign In'),
+                            child: Text('Sign In'.tr()),
                           ),
                         ),
                       ],
@@ -139,17 +183,18 @@ class LandingScreen extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                 child: Column(
                   children: [
-                    Text('Our Main Features',
+                    Text('Our Main Features'.tr(),
                         style: theme.textTheme.displayMedium),
                     const SizedBox(height: 8),
                     Text(
-                      'We combine health, nutrition, emergency care and human companionship in one smart solution.',
+                      'We combine health, nutrition, emergency care and human companionship in one smart solution.'
+                          .tr(),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyLarge
                           ?.copyWith(color: AppTheme.mutedFg),
                     ),
                     const SizedBox(height: 32),
-                    ..._features.asMap().entries.map((e) => _FeatureCard(
+                    ...features.asMap().entries.map((e) => _FeatureCard(
                           feature: e.value,
                           delay: (e.key * 100).ms,
                         )),
@@ -164,10 +209,8 @@ class LandingScreen extends StatelessWidget {
                   children: [
                     Text('SilverCare', style: theme.textTheme.headlineMedium),
                     const SizedBox(height: 8),
-                    Text(
-                      '© 2024 SilverCare. All rights reserved.',
-                      style: theme.textTheme.bodySmall,
-                    ),
+                    Text('© 2026 SilverCare. All rights reserved.'.tr(),
+                        style: theme.textTheme.bodySmall),
                   ],
                 ),
               ),
@@ -178,37 +221,6 @@ class LandingScreen extends StatelessWidget {
     );
   }
 }
-
-const _features = [
-  _Feature(
-    icon: Icons.smart_toy_rounded,
-    title: 'AI Health Assistant',
-    description:
-        'Personalized health advice, medication reminders and daily check-ins.',
-    color: AppTheme.primary,
-  ),
-  _Feature(
-    icon: Icons.restaurant_rounded,
-    title: 'Healthy Meal Service',
-    description:
-        'Nutritious meals tailored to your health condition, delivered to your door.',
-    color: Color(0xFF4CAF50),
-  ),
-  _Feature(
-    icon: Icons.local_hospital_rounded,
-    title: 'Emergency Support',
-    description:
-        'Instant AI assessment and connect you to doctors or emergency services.',
-    color: AppTheme.destructive,
-  ),
-  _Feature(
-    icon: Icons.group_rounded,
-    title: 'Companion Matching',
-    description:
-        'We match you with trusted companions to visit, help and spend quality time.',
-    color: AppTheme.secondary,
-  ),
-];
 
 class _Feature {
   final IconData icon;

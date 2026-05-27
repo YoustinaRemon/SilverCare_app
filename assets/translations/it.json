@@ -17,7 +17,9 @@
   "Pending": "In attesa",
   "Toggle Theme": "Cambia tema",
   "Sign Out": "Disconnettersi",
-    "companions": "Compagni",
+  "companions": "Compagni",
+    "taken": "Assunto",
+
 
 
   "Welcome back": "Bentornato",
@@ -143,5 +145,35 @@
   "Frequency (e.g. Twice daily)": "2 volte al giorno",
   "Notes (Optional)": "Opzionale",
   "Skip": "Salta",
-  "Marked as taken": "Segnato assunto"
+  "Marked as taken": "Segnato assunto",
+
+  
+  "Smart today, better tomorrow": "Intelligente oggi, migliore domani",
+  "We care beyond distance,\nacross borders.": "Ci prendiamo cura di te oltre le distanze,\nattraverso i confini.",
+  "Bridging Egypt and Switzerland with technology, compassion and trust. AI-powered platform designed to support elderly people living alone or managing chronic conditions.": "Colleghiamo Egitto e Svizzera con tecnologia, compassione e fiducia. Una piattaforma basata sull’IA progettata per supportare anziani che vivono da soli o gestiscono malattie croniche.",
+  "Create Your Profile": "Crea il tuo profilo",
+  "Our Main Features": "Le nostre funzionalità principali",
+  "We combine health, nutrition, emergency care and human companionship in one smart solution.": "Combiniamo salute, nutrizione, assistenza d’emergenza e compagnia umana in un’unica soluzione intelligente.",
+  "© 2026 SilverCare. All rights reserved.": "© 2026 SilverCare. Tutti i diritti riservati.",
+  "AI Health Assistant": "Assistente sanitario IA",
+  "Personalized health advice, medication reminders and daily check-ins.": "Consigli sanitari personalizzati, promemoria dei farmaci e controlli quotidiani.",
+  "Healthy Meal Service": "Servizio pasti sani",
+  "Nutritious meals tailored to your health condition, delivered to your door.": "Pasti nutrienti adattati alla tua condizione di salute, consegnati a casa tua.",
+  "Emergency Support": "Supporto di emergenza",
+  "Instant AI assessment and connect you to doctors or emergency services.": "Valutazione immediata con IA e collegamento a medici o servizi di emergenza.",
+  "Companion Matching": "Abbinamento di compagnia",
+  "We match you with trusted companions to visit, help and spend quality time.": "Ti abbiniamo a compagni fidati per visite, aiuto e tempo di qualità.",
+
+  "completed": "Completato",
+  "Today\n’s Medication Progress": "Progresso Farmaci\ndi Oggi",
+  "Payment Method": "Metodo di Pagamento",
+  "Cash": "Contanti",
+  "Credit Card": "Carta di Credito",
+  "Subtotal": "Subtotale",
+  "Delivery Fee": "Costo di Consegna",
+  "Total": "Totale",
+  "Confirm Order": "Conferma Ordine",
+  "Payment Successful!": "Pagamento Riuscito!",
+  "Back to Menu": "Torna al Menu",
+  "Your order has been placed successfully and will be delivered soon.": "Il tuo ordine è stato effettuato con successo e sarà consegnato a breve."
 }

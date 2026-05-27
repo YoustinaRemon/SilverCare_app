@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../models/cart_item.dart';
 import 'cart_screen.dart';
@@ -7,6 +8,7 @@ import 'cart_screen.dart';
 import 'meals_data.dart';
 import '../../widgets/meal_card.dart';
 import '../../widgets/category_filter.dart';
+import '../../providers/cart_provider.dart';
 
 class MealsScreen extends StatefulWidget {
   const MealsScreen({super.key});
@@ -16,41 +18,34 @@ class MealsScreen extends StatefulWidget {
 
 class _MealsScreenState extends State<MealsScreen> {
   String _filter = 'All';
-  final Map<String, int> _cart = {};
 
   List<Map<String, dynamic>> get _filtered => _filter == 'All'
       ? mockMeals.toList()
       : mockMeals.where((m) => m['category'] == _filter).toList();
 
-  int get _totalItems => _cart.values.fold(0, (a, b) => a + b);
+  void _add(String id) => context.read<CartProvider>().add(id);
 
-  double get _totalPrice => _cart.entries.fold(0.0, (sum, e) {
-        final meal = mockMeals.firstWhere((m) => m['id'] == e.key);
-        return sum + (meal['price'] as double) * e.value;
-      });
+  void _remove(String id) => context.read<CartProvider>().remove(id);
 
-  void _add(String id) => setState(() => _cart[id] = (_cart[id] ?? 0) + 1);
-
-  void _remove(String id) => setState(() {
-        if ((_cart[id] ?? 0) > 1) {
-          _cart[id] = _cart[id]! - 1;
-        } else {
-          _cart.remove(id);
-        }
-      });
+  double _calculateTotalPrice(Map<String, int> cart) {
+    return cart.entries.fold(0.0, (sum, e) {
+      final meal = mockMeals.firstWhere((m) => m['id'] == e.key);
+      return sum + (meal['price'] as double) * e.value;
+    });
+  }
 
   void _goToCart() {
-    if (_cart.isEmpty) {
+    final cartProvider = context.read<CartProvider>();
+    final cart = cartProvider.cart;
+
+    if (cart.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Your cart is empty!'.tr()),
-          backgroundColor: AppTheme.mutedFg,
-        ),
+        SnackBar(content: Text('Your cart is empty'.tr())),
       );
       return;
     }
 
-    final items = _cart.entries.map((entry) {
+    final items = cart.entries.map((entry) {
       final meal = mockMeals.firstWhere((m) => m['id'] == entry.key);
       return CartItem(
         id: entry.key,
@@ -66,7 +61,7 @@ class _MealsScreenState extends State<MealsScreen> {
       MaterialPageRoute(
         builder: (context) => CartScreen(
           items: items,
-          onClearCart: () => setState(() => _cart.clear()),
+          onClearCart: () => context.read<CartProvider>().clear(),
         ),
       ),
     );
@@ -75,6 +70,11 @@ class _MealsScreenState extends State<MealsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cartProvider = context.watch<CartProvider>();
+    final cart = cartProvider.cart;
+    final totalItems = cartProvider.totalItems;
+    final totalPrice = _calculateTotalPrice(cart);
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -96,8 +96,8 @@ class _MealsScreenState extends State<MealsScreen> {
                         ),
                       ),
                       Badge(
-                        isLabelVisible: _totalItems > 0,
-                        label: Text('$_totalItems'),
+                        isLabelVisible: totalItems > 0,
+                        label: Text('$totalItems'),
                         backgroundColor: AppTheme.destructive,
                         child: IconButton(
                           icon: const Icon(Icons.shopping_cart_outlined,
@@ -140,7 +140,7 @@ class _MealsScreenState extends State<MealsScreen> {
                   final meal = _filtered[i];
                   return MealCard(
                     meal: meal,
-                    qty: _cart[meal['id']] ?? 0,
+                    qty: cart[meal['id']] ?? 0,
                     onAdd: () => _add(meal['id'] as String),
                     onRemove: () => _remove(meal['id'] as String),
                   );
@@ -150,14 +150,14 @@ class _MealsScreenState extends State<MealsScreen> {
           ],
         ),
       ),
-      floatingActionButton: _totalItems > 0
+      floatingActionButton: totalItems > 0
           ? FloatingActionButton.extended(
               onPressed: _goToCart,
               backgroundColor: AppTheme.primary,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.shopping_cart_checkout_rounded),
               label: Text(
-                'Checkout · \$${_totalPrice.toStringAsFixed(2)} ($_totalItems)',
+                'Checkout · \$${totalPrice.toStringAsFixed(2)} ($totalItems)',
               ),
             )
           : null,

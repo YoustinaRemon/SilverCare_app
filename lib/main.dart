@@ -20,6 +20,7 @@ import 'screens/ai_assistant/ai_assistant_screen.dart';
 import 'screens/health_profile/health_profile_screen.dart';
 import 'widgets/app_shell.dart';
 import 'providers/medication_provider.dart';
+import "providers/cart_provider.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -159,6 +160,7 @@ class SilverCareApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: authService),
         ChangeNotifierProvider(create: (_) => MedicationProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()), // ⬅️ ضيفيه هنا
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

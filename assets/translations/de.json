@@ -174,5 +174,25 @@
   "Confirm Order": "Bestellung Bestätigen",
   "Payment Successful!": "Zahlung Erfolgreich!",
   "Back to Menu": "Zurück zum Menü",
-  "Your order has been placed successfully and will be delivered soon.": "Ihre Bestellung wurde erfolgreich aufgegeben und wird in Kürze geliefert."
+  "Your order has been placed successfully and will be delivered soon.": "Ihre Bestellung wurde erfolgreich aufgegeben und wird in Kürze geliefert.",
+
+  "Total Users": "Benutzer gesamt",
+  "Active SOS": "Aktive SOS",
+  "Total Bookings": "Buchungen gesamt",
+  "Meals Ordered": "Bestellte Mahlzeiten",
+  "New Companion": "Neuer Begleiter",
+  "Approve Booking": "Buchung genehmigen",
+  "Admin Profile": "Admin-Profil",
+  "System Administrator": "Systemadministrator",
+  "Active Super Admin": "Aktiver Super-Admin",
+  "Email Address": "E-Mail-Adresse",
+  "Role": "Rolle",
+  "Full Access": "Vollzugriff",
+  "Account ID": "Konto-ID",
+  "Edit Profile": "Profil bearbeiten",
+  "mg_dl": "mg/dl",
+  "mmhg": "mmHg",
+  "chronic_hint": "z. B. Diabetes, Bluthochdruck",
+  "allergies_hint": "z. B. Erdnüsse, Penicillin",
+  "notes_hint": "Weitere medizinische Hinweise..."
 }

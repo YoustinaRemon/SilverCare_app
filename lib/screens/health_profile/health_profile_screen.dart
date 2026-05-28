@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
-import 'health_profile_view.dart'; // ⬅️ استيراد وضع العرض
-import 'health_profile_edit.dart'; // ⬅️ استيراد وضع التعديل
+import 'health_profile_view.dart';
+import 'health_profile_edit.dart';
 
 class HealthProfileScreen extends StatefulWidget {
   const HealthProfileScreen({super.key});
@@ -16,6 +16,8 @@ class HealthProfileScreen extends StatefulWidget {
 }
 
 class _HealthProfileScreenState extends State<HealthProfileScreen> {
+  final _supabase = Supabase.instance.client;
+
   bool _loading = true;
   bool _saving = false;
   bool _isEditing = false;
@@ -33,7 +35,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadLocalData();
+    _loadProfileData();
   }
 
   @override
@@ -54,28 +56,36 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
     super.dispose();
   }
 
-  Future<void> _loadLocalData() async {
+  Future<void> _loadProfileData() async {
     setState(() => _loading = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        final data = await _supabase
+            .from('health_profiles')
+            .select()
+            .eq('id', user.id)
+            .maybeSingle();
+        final fullName = user.userMetadata?['full_name'] ??
+            user.userMetadata?['name'] ??
+            'Unknown User';
 
-      _ageCtrl.text = prefs.getString('hp_age') ?? '';
-      _weightCtrl.text = prefs.getString('hp_weight') ?? '';
-      _heightCtrl.text = prefs.getString('hp_height') ?? '';
-      _bloodSugarCtrl.text = prefs.getString('hp_blood_sugar') ?? '';
-      _bpSystolicCtrl.text = prefs.getString('hp_bp_sys') ?? '';
-      _bpDiastolicCtrl.text = prefs.getString('hp_bp_dia') ?? '';
-      _chronicCtrl.text = prefs.getString('hp_chronic') ?? '';
-      _allergiesCtrl.text = prefs.getString('hp_allergies') ?? '';
-      _notesCtrl.text = prefs.getString('hp_notes') ?? '';
+        if (data != null) {
+          _ageCtrl.text = data['age'] ?? '';
+          _weightCtrl.text = data['weight_kg'] ?? '';
+          _heightCtrl.text = data['height_cm'] ?? '';
+          _bloodSugarCtrl.text = data['blood_sugar'] ?? '';
+          _bpSystolicCtrl.text = data['blood_pressure_systolic'] ?? '';
+          _bpDiastolicCtrl.text = data['blood_pressure_diastolic'] ?? '';
+          _chronicCtrl.text = data['chronic_diseases'] ?? '';
+          _allergiesCtrl.text = data['allergies'] ?? '';
 
-      if (_ageCtrl.text.isEmpty &&
-          _weightCtrl.text.isEmpty &&
-          _chronicCtrl.text.isEmpty) {
-        _isEditing = true;
-      } else {
-        _isEditing = false;
+          _notesCtrl.text = data['medical_notes'] ?? '';
+          _isEditing = false;
+        } else {
+          _isEditing = true;
+        }
       }
     } catch (e) {
       debugPrint('Load Error: $e');
@@ -84,21 +94,32 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
     if (mounted) setState(() => _loading = false);
   }
 
-  Future<void> _saveLocalData() async {
+  Future<void> _saveProfileData() async {
     setState(() => _saving = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw 'User not logged in';
 
-      await prefs.setString('hp_age', _ageCtrl.text.trim());
-      await prefs.setString('hp_weight', _weightCtrl.text.trim());
-      await prefs.setString('hp_height', _heightCtrl.text.trim());
-      await prefs.setString('hp_blood_sugar', _bloodSugarCtrl.text.trim());
-      await prefs.setString('hp_bp_sys', _bpSystolicCtrl.text.trim());
-      await prefs.setString('hp_bp_dia', _bpDiastolicCtrl.text.trim());
-      await prefs.setString('hp_chronic', _chronicCtrl.text.trim());
-      await prefs.setString('hp_allergies', _allergiesCtrl.text.trim());
-      await prefs.setString('hp_notes', _notesCtrl.text.trim());
+      final fullName = user.userMetadata?['full_name'] ??
+          user.userMetadata?['name'] ??
+          'Unknown User';
+
+      await _supabase.from('health_profiles').upsert({
+        'id': user.id,
+        'age': _ageCtrl.text.trim(),
+        'weight_kg': _weightCtrl.text.trim(),
+        'height_cm': _heightCtrl.text.trim(),
+        'blood_sugar': _bloodSugarCtrl.text.trim(),
+        'blood_pressure_systolic': _bpSystolicCtrl.text.trim(),
+        'blood_pressure_diastolic': _bpDiastolicCtrl.text.trim(),
+        'chronic_diseases': _chronicCtrl.text.trim(),
+        'allergies': _allergiesCtrl.text.trim(),
+        'medical_notes': _notesCtrl.text.trim(),
+        'updated_at': DateTime.now().toIso8601String(),
+        'full_name': fullName,
+        'email': user.email,
+      });
 
       if (mounted) {
         setState(() {
@@ -117,7 +138,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('error_saving'.tr(args: ['$e'])),
+            content: Text('Error saving: $e'),
             backgroundColor: AppTheme.destructive,
           ),
         );
@@ -145,17 +166,16 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
           if (_isEditing && _ageCtrl.text.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.close_rounded),
-              onPressed: _loadLocalData,
+              onPressed: _loadProfileData,
             ),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _isEditing
-              // ⬅️ نداء لملف التعديل
               ? HealthProfileEdit(
                   isSaving: _saving,
-                  onSave: _saveLocalData,
+                  onSave: _saveProfileData,
                   ageCtrl: _ageCtrl,
                   weightCtrl: _weightCtrl,
                   heightCtrl: _heightCtrl,
@@ -166,7 +186,6 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                   allergiesCtrl: _allergiesCtrl,
                   notesCtrl: _notesCtrl,
                 )
-              // ⬅️ نداء لملف العرض
               : HealthProfileView(
                   userName: userName,
                   userEmail: userEmail,

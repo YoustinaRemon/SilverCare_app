@@ -21,6 +21,8 @@ import 'screens/health_profile/health_profile_screen.dart';
 import 'widgets/app_shell.dart';
 import 'providers/medication_provider.dart';
 import "providers/cart_provider.dart";
+import 'screens/admin/screens/admin_dashboard_screen.dart';
+import 'screens/admin/screens/admin_profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,56 +104,76 @@ void main() async {
 class SilverCareApp extends StatelessWidget {
   final AuthService authService;
 
-  const SilverCareApp({super.key, required this.authService});
+  SilverCareApp({super.key, required this.authService});
 
-  GoRouter get _router => GoRouter(
-        initialLocation: '/',
-        refreshListenable: authService,
-        redirect: (context, state) {
-          final loggedIn = authService.isLoggedIn;
-          final isAuthRoute = state.matchedLocation == '/login' ||
-              state.matchedLocation == '/register';
-          final isLanding = state.matchedLocation == '/';
+  late final GoRouter _router = GoRouter(
+    initialLocation: '/',
+    refreshListenable: authService,
+    redirect: (context, state) {
+      final loggedIn = authService.isLoggedIn;
+      final loc = state.matchedLocation;
 
-          if (!loggedIn && !isAuthRoute && !isLanding) {
-            return '/';
-          }
-          if (loggedIn && (isAuthRoute || isLanding)) {
-            return '/dashboard';
-          }
+      final currentUserEmail =
+          Supabase.instance.client.auth.currentUser?.email?.toLowerCase();
+      final isAdmin = currentUserEmail == 'admin@silvercare.com';
+
+      if (!loggedIn) {
+        if (loc == '/' || loc == '/login' || loc == '/register') {
           return null;
-        },
+        }
+        return '/';
+      }
+
+      if (loggedIn) {
+        if (loc == '/' || loc == '/login' || loc == '/register') {
+          return isAdmin ? '/admin' : '/dashboard';
+        }
+
+        if (!isAdmin && loc.startsWith('/admin')) {
+          return '/dashboard';
+        }
+
+        return null;
+      }
+
+      return null;
+    },
+    routes: [
+      GoRoute(path: '/', builder: (_, __) => const LandingScreen()),
+      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin-profile',
+        builder: (context, state) => const AdminProfileScreen(),
+      ),
+      ShellRoute(
+        builder: (context, state, child) => AppShell(child: child),
         routes: [
-          GoRoute(path: '/', builder: (_, __) => const LandingScreen()),
-          GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
           GoRoute(
-              path: '/register', builder: (_, __) => const RegisterScreen()),
-          ShellRoute(
-            builder: (context, state, child) => AppShell(child: child),
-            routes: [
-              GoRoute(
-                  path: '/dashboard',
-                  builder: (_, __) => const DashboardScreen()),
-              GoRoute(
-                  path: '/health-profile',
-                  builder: (_, __) => const HealthProfileScreen()),
-              GoRoute(
-                  path: '/medications',
-                  builder: (_, __) => const MedicationsScreen()),
-              GoRoute(
-                  path: '/emergency',
-                  builder: (_, __) => const EmergencyScreen()),
-              GoRoute(path: '/meals', builder: (_, __) => const MealsScreen()),
-              GoRoute(
-                  path: '/companions',
-                  builder: (_, __) => const CompanionsScreen()),
-              GoRoute(
-                  path: '/ai-assistant',
-                  builder: (_, __) => const AIAssistantScreen()),
-            ],
-          ),
+              path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+          GoRoute(
+              path: '/health-profile',
+              builder: (_, __) => const HealthProfileScreen()),
+          GoRoute(
+              path: '/medications',
+              builder: (_, __) => const MedicationsScreen()),
+          GoRoute(
+              path: '/emergency', builder: (_, __) => const EmergencyScreen()),
+          GoRoute(path: '/meals', builder: (_, __) => const MealsScreen()),
+          GoRoute(
+              path: '/companions',
+              builder: (_, __) => const CompanionsScreen()),
+          GoRoute(
+              path: '/ai-assistant',
+              builder: (_, __) => const AIAssistantScreen()),
         ],
-      );
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +182,7 @@ class SilverCareApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: authService),
         ChangeNotifierProvider(create: (_) => MedicationProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()), // ⬅️ ضيفيه هنا
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

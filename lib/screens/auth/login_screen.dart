@@ -75,8 +75,14 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = error;
     });
 
+    // ⬅️ التعديل السحري هنا
     if (error == null) {
-      context.go('/dashboard');
+      // بنحول الإيميل لحروف صغيرة عشان نتأكد إنه هيتطابق صح
+      if (email.toLowerCase() == 'admin@silvercare.com') {
+        context.go('/admin'); // يروح للوحة التحكم
+      } else {
+        context.go('/dashboard'); // يروح لتطبيق اليوزر العادي
+      }
     }
   }
 

@@ -159,5 +159,25 @@
   "Confirm Order": "Confirm Order",
   "Payment Successful!": "Payment Successful!",
   "Back to Menu": "Back to Menu",
-  "Your order has been placed successfully and will be delivered soon.": "Your order has been placed successfully and will be delivered soon."
+  "Your order has been placed successfully and will be delivered soon.": "Your order has been placed successfully and will be delivered soon.",
+ 
+  "Total Users": "Total Users",
+  "Active SOS": "Active SOS",
+  "Total Bookings": "Total Bookings",
+  "Meals Ordered": "Meals Ordered",
+  "New Companion": "New Companion",
+  "Approve Booking": "Approve Booking",
+  "Admin Profile": "Admin Profile",
+  "System Administrator": "System Administrator",
+  "Active Super Admin": "Active Super Admin",
+  "Email Address": "Email Address",
+  "Role": "Role",
+  "Full Access": "Full Access",
+  "Account ID": "Account ID",
+  "Edit Profile": "Edit Profile",
+  "mg_dl": "mg/dL",
+  "mmhg": "mmHg",
+  "chronic_hint": "e.g., Diabetes, Hypertension",
+  "allergies_hint": "e.g., Peanuts, Penicillin",
+  "notes_hint": "Any additional medical notes..."
 }

@@ -171,6 +171,26 @@
   "Confirm Order": "تأكيد الطلب",
   "Payment Successful!": "تم الدفع بنجاح!",
   "Back to Menu": "العودة للقائمة",
-  "Your order has been placed successfully and will be delivered soon.": "تم تقديم طلبك بنجاح وسيتم توصيله قريباً."
+  "Your order has been placed successfully and will be delivered soon.": "تم تقديم طلبك بنجاح وسيتم توصيله قريباً.",
+
+  "Total Users": "إجمالي المستخدمين",
+  "Active SOS": "نداءات الطوارئ النشطة",
+  "Total Bookings": "إجمالي الحجوزات",
+  "Meals Ordered": "الوجبات المطلوبة",
+  "New Companion": "مرافق جديد",
+  "Approve Booking": "قبول الحجز",
+  "Admin Profile": "الملف الشخصي للمسؤول",
+  "System Administrator": "مسؤول النظام",
+  "Active Super Admin": "مدير عام نشط",
+  "Email Address": "البريد الإلكتروني",
+  "Role": "الدور",
+  "Full Access": "صلاحيات كاملة",
+  "Account ID": "معرف الحساب",
+  "Edit Profile": "تعديل الملف الشخصي",
+  "mg_dl": "مجم/ديسيلتر",
+  "mmhg": "ملم زئبق",
+  "chronic_hint": "مثال: السكري، ضغط الدم",
+  "allergies_hint": "مثال: الفول السوداني، البنسلين",
+  "notes_hint": "أي ملاحظات طبية إضافية..."
 
 }

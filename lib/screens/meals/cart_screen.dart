@@ -30,38 +30,60 @@ class _CartScreenState extends State<CartScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
+      builder: (dialogContext) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Column(
-          children: [
-            const Icon(Icons.check_circle_rounded,
-                color: AppTheme.primary, size: 60),
-            const SizedBox(height: 16),
-            Text('Payment Successful!'.tr(), textAlign: TextAlign.center),
-          ],
-        ),
-        content: Text(
-          'Your order has been placed successfully and will be delivered soon.'
-              .tr(),
-          textAlign: TextAlign.center,
-        ),
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                widget.onClearCart();
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle_rounded,
+                  color: Colors.green, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'Payment Successful!'.tr(),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Your order has been placed successfully and will be delivered soon.'
+                    .tr(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
 
-                Navigator.pop(dialogContext);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
 
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
-              },
-              child: Text('Back to Menu'.tr()),
-            ),
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      widget.onClearCart();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text('Back to Menu'.tr(),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

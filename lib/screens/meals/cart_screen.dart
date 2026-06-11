@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // ⬅️ إضافة Supabase
 import '../../theme/app_theme.dart';
 import '../../models/cart_item.dart';
 
@@ -18,6 +19,9 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  final _supabase = Supabase.instance.client; // ⬅️ تعريف Supabase
+  bool _isProcessing = false; // ⬅️ متغير عشان نظهر التحميل وقت رفع الطلب
+
   String _paymentMethod = 'Cash on Delivery';
   final double _deliveryFee = 20.0;
 
@@ -26,66 +30,124 @@ class _CartScreenState extends State<CartScreen> {
 
   double get _total => _subtotal + _deliveryFee;
 
-  void _confirmPayment() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle_rounded,
-                  color: Colors.green, size: 64),
-              const SizedBox(height: 16),
-              Text(
-                'Payment Successful!'.tr(),
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Your order has been placed successfully and will be delivered soon.'
-                    .tr(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
+  // ⬅️ حولنا الدالة لـ Future عشان نبعت البيانات للسيرفر
+  Future<void> _confirmPayment() async {
+    setState(() {
+      _isProcessing = true;
+    });
 
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw 'User not logged in';
 
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      widget.onClearCart();
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text('Back to Menu'.tr(),
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
+      // 1. تجميع بيانات اليوزر
+      final fullName = user.userMetadata?['full_name'] ??
+          user.userMetadata?['name'] ??
+          'Unknown User';
+
+      // 2. تحويل الوجبات اللي في السلة لصيغة JSON عشان تتحفظ في الداتا بيز
+      final itemsJson = widget.items
+          .map((item) => {
+                'id': item.id,
+                'name': item.name,
+                'price': item.price,
+                'quantity': item.quantity,
+                'image': item.image,
+              })
+          .toList();
+
+      // 3. إرسال الطلب لجدول meal_orders
+      await _supabase.from('meal_orders').insert({
+        'user_id': user.id,
+        'full_name': fullName,
+        'email': user.email,
+        'items': itemsJson,
+        'subtotal': _subtotal,
+        'delivery_fee': _deliveryFee,
+        'total': _total,
+        'payment_method': _paymentMethod,
+        'status': 'Pending', // حالة الطلب الافتراضية (معلق)
+      });
+
+      if (!mounted) return;
+
+      // 4. إظهار رسالة النجاح بعد ما الطلب اترفع
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.green, size: 64),
+                const SizedBox(height: 16),
+                Text(
+                  'Payment Successful!'.tr(),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  'Your order has been placed successfully and will be delivered soon.'
+                      .tr(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        widget.onClearCart();
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text('Back to Menu'.tr(),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      // لو حصل أي إيرور (زي إن النت فصل)، هيجيب رسالة وميقفلش التطبيق
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error placing order: $e'),
+              backgroundColor: AppTheme.destructive),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
   }
 
   @override
@@ -207,9 +269,26 @@ class _CartScreenState extends State<CartScreen> {
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
+                    height: 50,
                     child: ElevatedButton(
-                      onPressed: _confirmPayment,
-                      child: Text('Confirm Order'.tr()),
+                      // ⬅️ لو الزرار بيحمل بنقفله عشان اليوزر ميدوسش مرتين ورا بعض
+                      onPressed: _isProcessing ? null : _confirmPayment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isProcessing
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2))
+                          : Text('Confirm Order'.tr(),
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

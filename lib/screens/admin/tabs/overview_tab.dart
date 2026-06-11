@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../theme/app_theme.dart';
 import '../screens/admin_users_screen.dart';
 import 'manage_companions_tab.dart';
+import '../../../screens/admin/screens/admin_orders_screen.dart';
 import "../../../widgets/silver_care_app_bar.dart";
 
 class OverviewTab extends StatefulWidget {
@@ -18,6 +19,7 @@ class _OverviewTabState extends State<OverviewTab> {
   int _totalBookings = 0;
   int _activeSOS = 0;
   int _totalUsers = 0;
+  int _totalOrders = 0; // ⬅️ متغير جديد لعدد الطلبات
 
   @override
   void initState() {
@@ -34,14 +36,17 @@ class _OverviewTabState extends State<OverviewTab> {
           .from('emergency_alerts')
           .select('id')
           .neq('status', 'resolved');
-
       final usersData = await _supabase.from('health_profiles').select('id');
+
+      // ⬅️ جلب عدد الطلبات من جدول meal_orders
+      final ordersData = await _supabase.from('meal_orders').select('id');
 
       if (mounted) {
         setState(() {
           _totalBookings = bookingsData.length;
           _activeSOS = sosData.length;
           _totalUsers = usersData.length;
+          _totalOrders = ordersData.length; // ⬅️ حفظ العدد
           _loading = false;
         });
       }
@@ -115,8 +120,24 @@ class _OverviewTabState extends State<OverviewTab> {
                         );
                       },
                     ),
-                    _buildStatCard('Meals Ordered'.tr(), '156',
-                        Icons.shopping_bag_rounded, Colors.green, context),
+
+                    // 👇 خلينا كارت الطلبات شغال وبيودي للشاشة الجديدة 👇
+                    _buildStatCard(
+                      'Meals Ordered'.tr(),
+                      '$_totalOrders', // ⬅️ الرقم بقى حقيقي من الداتا بيز
+                      Icons.shopping_bag_rounded,
+                      Colors.green,
+                      context,
+                      isClickable: true, // ⬅️ تفعيل الضغط
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AdminOrdersScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
         ],

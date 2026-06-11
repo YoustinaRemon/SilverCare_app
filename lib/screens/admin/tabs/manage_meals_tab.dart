@@ -14,7 +14,6 @@ class _ManageMealsTabState extends State<ManageMealsTab> {
   bool _loading = true;
   List<Map<String, dynamic>> _meals = [];
 
-  // قايمة التصنيفات المتاحة
   final List<String> _categories = [
     'General',
     'Diabetic',
@@ -86,7 +85,6 @@ class _ManageMealsTabState extends State<ManageMealsTab> {
     }
   }
 
-  // ⬅️ تم تحديث نافذة الإضافة بالخانات الجديدة
   void _addMealDialog() {
     final nameCtrl = TextEditingController();
     final priceCtrl = TextEditingController();
@@ -112,7 +110,6 @@ class _ManageMealsTabState extends State<ManageMealsTab> {
                         fontWeight: FontWeight.bold, fontSize: 18)),
               ],
             ),
-            // استخدمنا ScrollView عشان الشاشة متضربش لو الكيبورد فتح
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

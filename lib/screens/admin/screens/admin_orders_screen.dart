@@ -73,7 +73,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             content: Text('Order status updated to $newStatus'.tr()),
             backgroundColor: Colors.green),
       );
-      _fetchOrders(); // إعادة جلب البيانات لتحديث الشاشة
+      _fetchOrders();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -271,7 +271,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                                             ],
                                           ),
                                         );
-                                      }).toList(),
+                                      }),
                                       const Divider(height: 24),
 
                                       // الإجمالي وطريقة الدفع

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
-import 'package:easy_localization/easy_localization.dart';
+
+import 'widgets/emergency_header.dart';
+import 'widgets/sos_action_card.dart';
+import 'widgets/quick_contacts_section.dart';
+import 'widgets/alert_history_section.dart';
 
 enum SOSState { idle, locating, contacting, sent, cancelled }
 
@@ -66,23 +69,30 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       _position = await Geolocator.getCurrentPosition(
               desiredAccuracy: LocationAccuracy.high)
           .timeout(const Duration(seconds: 10));
-    } catch (_) {
-      // بيكمل حتى لو الـ GPS مقفول
-    }
+    } catch (_) {}
 
     if (!mounted) return;
+
     final authService = Provider.of<AuthService>(context, listen: false);
     final user = authService.currentUser;
+
     setState(() => _sosState = SOSState.contacting);
     await Future.delayed(const Duration(seconds: 2));
 
     if (user == null || !mounted) return;
 
     try {
+      final fullName = user.userMetadata?['full_name'] ??
+          user.userMetadata?['name'] ??
+          'Unknown Patient';
+      final email = user.email ?? 'No Email';
+
       final response = await _db
           .from('emergency_alerts')
           .insert({
             'user_id': user.id,
+            'patient_name': fullName,
+            'patient_email': email,
             'alert_type': 'SOS',
             'severity': 'high',
             'status': 'active',
@@ -94,11 +104,21 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
       _currentAlertId = response['id'].toString();
       await _loadAlerts();
+
+      if (mounted) setState(() => _sosState = SOSState.sent);
     } catch (e) {
       debugPrint('Error sending SOS: $e');
+      if (mounted) {
+        setState(() => _sosState = SOSState.idle);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Database Error: $e'),
+            backgroundColor: AppTheme.destructive,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     }
-
-    if (mounted) setState(() => _sosState = SOSState.sent);
   }
 
   Future<void> _cancelSOS() async {
@@ -129,274 +149,31 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _loadAlerts,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text('Emergency'.tr(), style: theme.textTheme.displayMedium),
-            const SizedBox(height: 4),
-            Text('Quick access to emergency services'.tr(),
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: AppTheme.mutedFg)),
+            const EmergencyHeader(), // 🌟
             const SizedBox(height: 28),
-            Card(
-              surfaceTintColor: AppTheme.destructive.withValues(alpha: .05),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                    color: AppTheme.destructive.withValues(alpha: .2),
-                    width: 1.5),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Text('Emergency SOS'.tr(),
-                        style: theme.textTheme.headlineMedium
-                            ?.copyWith(color: AppTheme.destructive)),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Press the SOS button to alert family, doctor and emergency services with your location.'
-                          .tr(),
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: AppTheme.mutedFg),
-                    ),
-                    const SizedBox(height: 28),
-                    if (_sosState == SOSState.idle)
-                      GestureDetector(
-                        onTap: _triggerSOS,
-                        child: Container(
-                          width: 140,
-                          height: 140,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppTheme.destructive,
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    AppTheme.destructive.withValues(alpha: .4),
-                                blurRadius: 24,
-                                spreadRadius: 4,
-                              ),
-                            ],
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.sos_rounded,
-                                  color: Colors.white, size: 48),
-                              SizedBox(height: 4),
-                              Text('PRESS',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 13,
-                                      letterSpacing: 2)),
-                            ],
-                          ),
-                        ),
-                      )
-                    else if (_sosState == SOSState.sent) ...[
-                      Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppTheme.primary.withValues(alpha: .1),
-                          border: Border.all(color: AppTheme.primary, width: 3),
-                        ),
-                        child: const Icon(Icons.check_circle_rounded,
-                            color: AppTheme.primary, size: 64),
-                      ),
-                      const SizedBox(height: 16),
-                      Text('SOS Sent!'.tr(),
-                          style: theme.textTheme.headlineMedium
-                              ?.copyWith(color: AppTheme.primary)),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Emergency services and family have been notified with your location.'
-                            .tr(),
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(color: AppTheme.mutedFg),
-                      ),
-                      const SizedBox(height: 16),
-                      OutlinedButton(
-                        onPressed:
-                            _cancelSOS, // ⬅️ بتنادي على الدالة الجديدة عشان تقفل الاستغاثة
-                        child: Text('Mark as Safe'.tr()),
-                      ),
-                    ] else ...[
-                      const CircularProgressIndicator(
-                          color: AppTheme.destructive),
-                      const SizedBox(height: 16),
-                      Text(
-                        _sosState == SOSState.locating
-                            ? '📍 Getting your location...'.tr()
-                            : '📞 Contacting emergency services...'.tr(),
-                        style: theme.textTheme.bodyLarge
-                            ?.copyWith(color: AppTheme.destructive),
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: _cancelSOS,
-                        child: Text('Cancel'.tr(),
-                            style:
-                                const TextStyle(color: AppTheme.destructive)),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+            SosActionCard(
+              // 🌟
+              sosState: _sosState,
+              onTrigger: _triggerSOS,
+              onCancel: _cancelSOS,
             ),
             const SizedBox(height: 28),
-            Text('Quick Contacts'.tr(), style: theme.textTheme.headlineMedium),
-            const SizedBox(height: 12),
-            const Row(children: [
-              _ContactButton(
-                icon: Icons.local_hospital_rounded,
-                label: 'Ambulance\n123',
-                color: AppTheme.destructive,
-                phone: '123',
-              ),
-              SizedBox(width: 12),
-              _ContactButton(
-                icon: Icons.local_police_rounded,
-                label: 'Police\n122',
-                color: AppTheme.primary,
-                phone: '122',
-              ),
-              SizedBox(width: 12),
-              _ContactButton(
-                icon: Icons.favorite_rounded,
-                label: 'Family\n01286354482',
-                color: Colors.purple,
-                phone: '01286354482',
-              ),
-            ]),
+            const QuickContactsSection(), // 🌟
             const SizedBox(height: 28),
-            Text('Alert History'.tr(), style: theme.textTheme.headlineMedium),
-            const SizedBox(height: 12),
-            if (_loadingHistory)
-              const Center(child: CircularProgressIndicator())
-            else if (_alerts.isEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const Icon(Icons.shield_rounded,
-                            color: AppTheme.primary, size: 40),
-                        const SizedBox(height: 12),
-                        Text('No emergency alerts.'.tr(),
-                            style: theme.textTheme.bodyMedium
-                                ?.copyWith(color: AppTheme.mutedFg)),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            else
-              ..._alerts.map((alert) {
-                final createdAt = DateTime.tryParse(alert['created_at'] ?? '');
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _statusColor(alert['status'] ?? '')
-                            .withValues(alpha: .12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.warning_rounded,
-                          color: _statusColor(alert['status'] ?? ''), size: 20),
-                    ),
-                    title: Text(alert['alert_type'] ?? 'SOS',
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: createdAt != null
-                        ? Text(DateFormat('dd MMM yyyy, HH:mm')
-                            .format(createdAt.toLocal()))
-                        : null,
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _statusColor(alert['status'] ?? '')
-                            .withValues(alpha: .12),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        (alert['status'] ?? 'unknown').toUpperCase(),
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: _statusColor(alert['status'] ?? ''),
-                            fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+            AlertHistorySection(
+              // 🌟
+              loading: _loadingHistory,
+              alerts: _alerts,
+              statusColorMapper: _statusColor,
+            ),
             const SizedBox(height: 24),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ContactButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final String phone;
-
-  const _ContactButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.phone,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () async {
-          final Uri url = Uri.parse('tel:$phone');
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url);
-          } else {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Could not launch dialer for $phone')),
-              );
-            }
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: .1),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: color.withValues(alpha: .25)),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 6),
-              Text(label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 12, color: color, fontWeight: FontWeight.w700)),
-            ],
-          ),
         ),
       ),
     );

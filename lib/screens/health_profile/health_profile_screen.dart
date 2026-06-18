@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
@@ -21,7 +23,11 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
   bool _loading = true;
   bool _saving = false;
   bool _isEditing = false;
+  bool _uploadingImage = false; // مؤشر تحميل خاص برفع الصورة
+  String? _avatarUrl; // لحفظ رابط الصورة الحالي
 
+  final _fullNameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   final _ageCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
   final _heightCtrl = TextEditingController();
@@ -41,6 +47,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
   @override
   void dispose() {
     for (final c in [
+      _fullNameCtrl,
+      _phoneCtrl,
       _ageCtrl,
       _weightCtrl,
       _heightCtrl,
@@ -58,7 +66,6 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
 
   Future<void> _loadProfileData() async {
     setState(() => _loading = true);
-
     try {
       final user = _supabase.auth.currentUser;
       if (user != null) {
@@ -67,9 +74,14 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
             .select()
             .eq('id', user.id)
             .maybeSingle();
-        // fullName is not needed when loading profile data
+
+        final authName =
+            user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '';
 
         if (data != null) {
+          _fullNameCtrl.text = data['full_name'] ?? authName;
+          _phoneCtrl.text = data['phone_number'] ?? '';
+          _avatarUrl = data['avatar_url']; // 🌟 قراءة رابط الصورة من الداتا بيز
           _ageCtrl.text = data['age'] ?? '';
           _weightCtrl.text = data['weight_kg'] ?? '';
           _heightCtrl.text = data['height_cm'] ?? '';
@@ -78,33 +90,85 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
           _bpDiastolicCtrl.text = data['blood_pressure_diastolic'] ?? '';
           _chronicCtrl.text = data['chronic_diseases'] ?? '';
           _allergiesCtrl.text = data['allergies'] ?? '';
-
           _notesCtrl.text = data['medical_notes'] ?? '';
           _isEditing = false;
         } else {
+          _fullNameCtrl.text = authName;
           _isEditing = true;
         }
       }
     } catch (e) {
       debugPrint('Load Error: $e');
     }
-
     if (mounted) setState(() => _loading = false);
+  }
+
+  // 🌟 دالة اختيار الصورة ورفعها لـ Supabase Storage
+  Future<void> _pickAndUploadImage() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    final picker = ImagePicker();
+    final XFile? image =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+
+    if (image == null) return;
+
+    setState(() => _uploadingImage = true);
+
+    try {
+      final file = File(image.path);
+      final fileExt = image.path.split('.').last;
+      final fileName = '${user.id}_profile.$fileExt';
+
+      await _supabase.storage.from('avatars').upload(
+            fileName,
+            file,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      final String publicUrl =
+          _supabase.storage.from('avatars').getPublicUrl(fileName);
+
+      await _supabase
+          .from('health_profiles')
+          .update({'avatar_url': publicUrl}).eq('id', user.id);
+
+      setState(() {
+        _avatarUrl = publicUrl;
+        _uploadingImage = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Profile picture updated successfully!'),
+              backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      setState(() => _uploadingImage = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error uploading image: $e'),
+              backgroundColor: AppTheme.destructive),
+        );
+      }
+    }
   }
 
   Future<void> _saveProfileData() async {
     setState(() => _saving = true);
-
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) throw 'User not logged in';
 
-      final fullName = user.userMetadata?['full_name'] ??
-          user.userMetadata?['name'] ??
-          'Unknown User';
-
       await _supabase.from('health_profiles').upsert({
         'id': user.id,
+        'full_name': _fullNameCtrl.text.trim(),
+        'phone_number': _phoneCtrl.text.trim(),
+        'avatar_url': _avatarUrl,
         'age': _ageCtrl.text.trim(),
         'weight_kg': _weightCtrl.text.trim(),
         'height_cm': _heightCtrl.text.trim(),
@@ -115,7 +179,6 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
         'allergies': _allergiesCtrl.text.trim(),
         'medical_notes': _notesCtrl.text.trim(),
         'updated_at': DateTime.now().toIso8601String(),
-        'full_name': fullName,
         'email': user.email,
       });
 
@@ -126,9 +189,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Profile saved successfully!'),
-            backgroundColor: AppTheme.primary,
-          ),
+              content: Text('Profile saved successfully!'),
+              backgroundColor: AppTheme.primary),
         );
       }
     } catch (e) {
@@ -136,9 +198,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving: $e'),
-            backgroundColor: AppTheme.destructive,
-          ),
+              content: Text('Error saving: $e'),
+              backgroundColor: AppTheme.destructive),
         );
       }
     }
@@ -147,9 +208,6 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthService>().currentUser;
-    final userName = user?.userMetadata?['full_name'] ??
-        user?.userMetadata?['name'] ??
-        'User';
     final userEmail = user?.email ?? '';
 
     return Scaffold(
@@ -174,6 +232,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
               ? HealthProfileEdit(
                   isSaving: _saving,
                   onSave: _saveProfileData,
+                  fullNameCtrl: _fullNameCtrl,
+                  phoneCtrl: _phoneCtrl,
                   ageCtrl: _ageCtrl,
                   weightCtrl: _weightCtrl,
                   heightCtrl: _heightCtrl,
@@ -183,10 +243,14 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                   chronicCtrl: _chronicCtrl,
                   allergiesCtrl: _allergiesCtrl,
                   notesCtrl: _notesCtrl,
+                  avatarUrl: _avatarUrl,
+                  isUploadingImage: _uploadingImage,
+                  onPickImage: _pickAndUploadImage,
                 )
               : HealthProfileView(
-                  userName: userName,
                   userEmail: userEmail,
+                  fullNameCtrl: _fullNameCtrl,
+                  phoneCtrl: _phoneCtrl,
                   ageCtrl: _ageCtrl,
                   weightCtrl: _weightCtrl,
                   heightCtrl: _heightCtrl,
@@ -196,6 +260,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                   chronicCtrl: _chronicCtrl,
                   allergiesCtrl: _allergiesCtrl,
                   notesCtrl: _notesCtrl,
+                  avatarUrl: _avatarUrl,
                 ),
     );
   }

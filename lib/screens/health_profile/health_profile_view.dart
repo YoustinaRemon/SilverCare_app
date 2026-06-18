@@ -3,8 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../theme/app_theme.dart';
 
 class HealthProfileView extends StatelessWidget {
-  final String userName;
   final String userEmail;
+  final TextEditingController fullNameCtrl;
+  final TextEditingController phoneCtrl;
+
+  // 🌟 استقبلنا رابط الصورة هنا
+  final String? avatarUrl;
+
   final TextEditingController ageCtrl;
   final TextEditingController weightCtrl;
   final TextEditingController heightCtrl;
@@ -17,8 +22,10 @@ class HealthProfileView extends StatelessWidget {
 
   const HealthProfileView({
     super.key,
-    required this.userName,
     required this.userEmail,
+    required this.fullNameCtrl,
+    required this.phoneCtrl,
+    required this.avatarUrl, // 🌟
     required this.ageCtrl,
     required this.weightCtrl,
     required this.heightCtrl,
@@ -33,6 +40,13 @@ class HealthProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final String actualName = fullNameCtrl.text.isNotEmpty
+        ? fullNameCtrl.text
+        : 'Unknown Patient'.tr();
+    final String actualPhone =
+        phoneCtrl.text.isNotEmpty ? phoneCtrl.text : 'No phone number'.tr();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -46,23 +60,34 @@ class HealthProfileView extends StatelessWidget {
             ),
             child: Column(
               children: [
+                // 🌟 عرض الصورة لو موجودة، ولو مش موجودة يعرض أول حرف من الاسم
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: AppTheme.primary.withValues(alpha: .2),
-                  child: Text(
-                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                    style: theme.textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  backgroundImage:
+                      avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+                  child: avatarUrl == null
+                      ? Text(
+                          actualName.isNotEmpty
+                              ? actualName[0].toUpperCase()
+                              : 'U',
+                          style: theme.textTheme.headlineLarge?.copyWith(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 16),
-                Text(userName, style: theme.textTheme.headlineMedium),
+                Text(actualName, style: theme.textTheme.headlineMedium),
                 const SizedBox(height: 4),
                 Text(userEmail,
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(color: AppTheme.mutedFg)),
+                const SizedBox(height: 4),
+                Text(actualPhone,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.primary, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -73,6 +98,8 @@ class HealthProfileView extends StatelessWidget {
             title: 'Basic Information'.tr(),
             icon: Icons.person_outline,
             data: {
+              'Full Name'.tr(): actualName,
+              'Phone'.tr(): actualPhone,
               'Age'.tr(): '${ageCtrl.text} ${'yrs'.tr()}',
               'Weight'.tr(): '${weightCtrl.text} ${'kg'.tr()}',
               'Height'.tr(): '${heightCtrl.text} ${'cm'.tr()}',

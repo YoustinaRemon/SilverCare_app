@@ -75,13 +75,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = error;
     });
 
-    // ⬅️ التعديل السحري هنا
     if (error == null) {
-      // بنحول الإيميل لحروف صغيرة عشان نتأكد إنه هيتطابق صح
       if (email.toLowerCase() == 'admin@silvercare.com') {
-        context.go('/admin'); // يروح للوحة التحكم
+        context.go('/admin');
       } else {
-        context.go('/dashboard'); // يروح لتطبيق اليوزر العادي
+        context.go('/dashboard');
       }
     }
   }
@@ -109,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   GestureDetector(
                     onTap: () => context.go('/'),
                     child: Text(
-                      'SilverCare',
+                      'Silver Care',
                       style: theme.textTheme.displayMedium,
                     ),
                   ),

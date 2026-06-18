@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -20,6 +21,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   Position? _position;
   List<Map<String, dynamic>> _alerts = [];
   bool _loadingHistory = true;
+  String? _currentAlertId;
 
   @override
   void initState() {
@@ -44,7 +46,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
           .limit(10);
       if (mounted) {
         setState(() {
-          _alerts = (data as List).cast<Map<String, dynamic>>();
+          _alerts = List<Map<String, dynamic>>.from(data);
           _loadingHistory = false;
         });
       }
@@ -56,7 +58,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   Future<void> _triggerSOS() async {
     setState(() => _sosState = SOSState.locating);
 
-    // Try to get GPS
     try {
       final permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -66,7 +67,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               desiredAccuracy: LocationAccuracy.high)
           .timeout(const Duration(seconds: 10));
     } catch (_) {
-      // Continue without GPS
+      // بيكمل حتى لو الـ GPS مقفول
     }
 
     if (!mounted) return;
@@ -78,21 +79,42 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     if (user == null || !mounted) return;
 
     try {
-      await _db.from('emergency_alerts').insert({
-        'user_id': user.id,
-        'alert_type': 'SOS',
-        'severity': 'high',
-        'status': 'active',
-        'latitude': _position?.latitude,
-        'longitude': _position?.longitude,
-      });
+      final response = await _db
+          .from('emergency_alerts')
+          .insert({
+            'user_id': user.id,
+            'alert_type': 'SOS',
+            'severity': 'high',
+            'status': 'active',
+            'latitude': _position?.latitude,
+            'longitude': _position?.longitude,
+          })
+          .select()
+          .single();
+
+      _currentAlertId = response['id'].toString();
       await _loadAlerts();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error sending SOS: $e');
+    }
 
     if (mounted) setState(() => _sosState = SOSState.sent);
   }
 
-  void _cancelSOS() => setState(() => _sosState = SOSState.idle);
+  Future<void> _cancelSOS() async {
+    if (_currentAlertId != null) {
+      try {
+        await _db
+            .from('emergency_alerts')
+            .update({'status': 'resolved'}).eq('id', _currentAlertId!);
+        _currentAlertId = null;
+        _loadAlerts();
+      } catch (e) {
+        debugPrint('Error resolving SOS: $e');
+      }
+    }
+    setState(() => _sosState = SOSState.idle);
+  }
 
   Color _statusColor(String status) {
     switch (status) {
@@ -121,8 +143,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: AppTheme.mutedFg)),
             const SizedBox(height: 28),
-
-            // SOS Button Card
             Card(
               surfaceTintColor: AppTheme.destructive.withValues(alpha: .05),
               shape: RoundedRectangleBorder(
@@ -147,8 +167,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                           ?.copyWith(color: AppTheme.mutedFg),
                     ),
                     const SizedBox(height: 28),
-
-                    // Big SOS Button
                     if (_sosState == SOSState.idle)
                       GestureDetector(
                         onTap: _triggerSOS,
@@ -209,8 +227,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton(
-                        onPressed: _cancelSOS,
-                        child: const Text('Done'),
+                        onPressed:
+                            _cancelSOS, // ⬅️ بتنادي على الدالة الجديدة عشان تقفل الاستغاثة
+                        child: Text('Mark as Safe'.tr()),
                       ),
                     ] else ...[
                       const CircularProgressIndicator(
@@ -235,10 +254,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 28),
-
-            // Quick Contact Chips
             Text('Quick Contacts'.tr(), style: theme.textTheme.headlineMedium),
             const SizedBox(height: 12),
             const Row(children: [
@@ -246,27 +262,26 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                 icon: Icons.local_hospital_rounded,
                 label: 'Ambulance\n123',
                 color: AppTheme.destructive,
+                phone: '123',
               ),
               SizedBox(width: 12),
               _ContactButton(
                 icon: Icons.local_police_rounded,
                 label: 'Police\n122',
                 color: AppTheme.primary,
+                phone: '122',
               ),
               SizedBox(width: 12),
               _ContactButton(
-                icon: Icons.fire_truck_rounded,
-                label: 'Fire\n125',
-                color: AppTheme.amber,
+                icon: Icons.favorite_rounded,
+                label: 'Family\n01286354482',
+                color: Colors.purple,
+                phone: '01286354482',
               ),
             ]),
-
             const SizedBox(height: 28),
-
-            // Alert History
             Text('Alert History'.tr(), style: theme.textTheme.headlineMedium),
             const SizedBox(height: 12),
-
             if (_loadingHistory)
               const Center(child: CircularProgressIndicator())
             else if (_alerts.isEmpty)
@@ -340,14 +355,31 @@ class _ContactButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  const _ContactButton(
-      {required this.icon, required this.label, required this.color});
+  final String phone;
+
+  const _ContactButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.phone,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
-        onTap: () {},
+        onTap: () async {
+          final Uri url = Uri.parse('tel:$phone');
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url);
+          } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Could not launch dialer for $phone')),
+              );
+            }
+          }
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(

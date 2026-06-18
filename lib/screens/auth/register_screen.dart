@@ -38,7 +38,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
 
-    // 1. التحقق من إن الحقول مش فاضية
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       setState(() {
         _error = 'Please fill in all fields.'.tr();
@@ -47,7 +46,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // 2. التحقق من الاسم (حروف ومسافات فقط، يرفض الأرقام والرموز)
     final nameRegex = RegExp(r'^[\p{L}\s]+$', unicode: true);
     if (!nameRegex.hasMatch(name)) {
       setState(() {
@@ -128,7 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   GestureDetector(
                     onTap: () => context.go('/'),
                     child: Text(
-                      'SilverCare',
+                      'Silver Care',
                       style: theme.textTheme.displayMedium,
                     ),
                   ),
@@ -141,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Join SilverCare and take control of your health.'.tr(),
+                'Join Silver Care and take control of your health.'.tr(),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: AppTheme.mutedFg,
                 ),
@@ -227,8 +225,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   GestureDetector(
                     onTap: () => context.go('/login'),
                     child: Text(
-                      'sign_in'
-                          .tr(), // غيرتها لـ sign_in عشان تشتغل مع الـ JSON
+                      'sign_in'.tr(),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppTheme.primary,
                         fontWeight: FontWeight.w600,

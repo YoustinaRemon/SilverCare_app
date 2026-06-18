@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import "../../../theme/app_theme.dart";
+import '../../../widgets/silver_care_app_bar.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
   const AdminOrdersScreen({super.key});
@@ -25,7 +26,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     _fetchOrders();
   }
 
-  // جلب الطلبات من الداتا بيز
   Future<void> _fetchOrders() async {
     if (!mounted) return;
     setState(() => _loading = true);
@@ -48,7 +48,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     }
   }
 
-  // فلترة الطلبات حسب الحالة في الـ UI
   void _filterOrders(String status) {
     setState(() {
       _selectedStatusFilter = status;
@@ -61,7 +60,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     });
   }
 
-  // تحديث حالة الطلب في Supabase
   Future<void> _updateOrderStatus(dynamic orderId, String newStatus) async {
     try {
       await _supabase
@@ -101,11 +99,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Meal Orders Management'.tr()),
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
-      ),
+      appBar: const SilverCareAppBar(
+          healthProfileRoute: '/admin/health-profile', showCompanions: false),
       body: Column(
         children: [
           Container(
@@ -133,8 +128,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               }).toList(),
             ),
           ),
-
-          // قائمة الطلبات 📋
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())

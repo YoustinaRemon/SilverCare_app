@@ -20,18 +20,16 @@ class SilverCareAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: const Text('SilverCare'),
+      title: const Text('Silver Care'),
       actions: [
         const LanguagePicker(),
         IconButton(
           icon: const Icon(Icons.person_rounded),
-          onPressed: () =>
-              context.go(healthProfileRoute), // استخدام المتغير هنا
+          onPressed: () => context.go(healthProfileRoute),
         ),
         PopupMenuButton(
           icon: const Icon(Icons.more_vert),
           itemBuilder: (context) => [
-            // الـ if دي هتخلي الـ Companions يظهر بس لو showCompanions قيمتها true
             if (showCompanions)
               PopupMenuItem(
                 child: ListTile(

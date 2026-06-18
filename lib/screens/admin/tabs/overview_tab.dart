@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../theme/app_theme.dart';
+import '../screens/admin_sos_screen.dart';
 import '../screens/admin_users_screen.dart';
 import 'manage_companions_tab.dart';
 import '../../../screens/admin/screens/admin_orders_screen.dart';
@@ -19,7 +20,7 @@ class _OverviewTabState extends State<OverviewTab> {
   int _totalBookings = 0;
   int _activeSOS = 0;
   int _totalUsers = 0;
-  int _totalOrders = 0; // ⬅️ متغير جديد لعدد الطلبات
+  int _totalOrders = 0;
 
   @override
   void initState() {
@@ -38,7 +39,6 @@ class _OverviewTabState extends State<OverviewTab> {
           .neq('status', 'resolved');
       final usersData = await _supabase.from('health_profiles').select('id');
 
-      // ⬅️ جلب عدد الطلبات من جدول meal_orders
       final ordersData = await _supabase.from('meal_orders').select('id');
 
       if (mounted) {
@@ -46,7 +46,7 @@ class _OverviewTabState extends State<OverviewTab> {
           _totalBookings = bookingsData.length;
           _activeSOS = sosData.length;
           _totalUsers = usersData.length;
-          _totalOrders = ordersData.length; // ⬅️ حفظ العدد
+          _totalOrders = ordersData.length;
           _loading = false;
         });
       }
@@ -96,8 +96,22 @@ class _OverviewTabState extends State<OverviewTab> {
                         );
                       },
                     ),
-                    _buildStatCard('Active SOS'.tr(), '$_activeSOS',
-                        Icons.sos_rounded, AppTheme.destructive, context),
+                    _buildStatCard(
+                      'Active SOS'.tr(),
+                      '$_activeSOS',
+                      Icons.sos_rounded,
+                      AppTheme.destructive,
+                      context,
+                      isClickable: true,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AdminSosScreen(),
+                          ),
+                        );
+                      },
+                    ),
                     _buildStatCard(
                       'Total Bookings'.tr(),
                       '$_totalBookings',
@@ -120,15 +134,13 @@ class _OverviewTabState extends State<OverviewTab> {
                         );
                       },
                     ),
-
-                    // 👇 خلينا كارت الطلبات شغال وبيودي للشاشة الجديدة 👇
                     _buildStatCard(
                       'Meals Ordered'.tr(),
-                      '$_totalOrders', // ⬅️ الرقم بقى حقيقي من الداتا بيز
+                      '$_totalOrders',
                       Icons.shopping_bag_rounded,
                       Colors.green,
                       context,
-                      isClickable: true, // ⬅️ تفعيل الضغط
+                      isClickable: true,
                       onTap: () {
                         Navigator.push(
                           context,

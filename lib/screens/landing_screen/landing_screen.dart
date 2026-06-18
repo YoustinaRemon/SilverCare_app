@@ -60,7 +60,7 @@ class LandingScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('SilverCare', style: theme.textTheme.displayMedium),
+                    Text('Silver Care', style: theme.textTheme.displayMedium),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -207,9 +207,9 @@ class LandingScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    Text('SilverCare', style: theme.textTheme.headlineMedium),
+                    Text('Silver Care', style: theme.textTheme.headlineMedium),
                     const SizedBox(height: 8),
-                    Text('© 2026 SilverCare. All rights reserved.'.tr(),
+                    Text('© 2026 Silver Care. All rights reserved.'.tr(),
                         style: theme.textTheme.bodySmall),
                   ],
                 ),

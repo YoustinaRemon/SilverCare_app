@@ -67,9 +67,7 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
             .select()
             .eq('id', user.id)
             .maybeSingle();
-        final fullName = user.userMetadata?['full_name'] ??
-            user.userMetadata?['name'] ??
-            'Unknown User';
+        // fullName is not needed when loading profile data
 
         if (data != null) {
           _ageCtrl.text = data['age'] ?? '';

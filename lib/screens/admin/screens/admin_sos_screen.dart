@@ -4,7 +4,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../theme/app_theme.dart';
 import "../../../widgets/silver_care_app_bar.dart";
+
 import '../widgets/admin_alert_card.dart';
+import '../widgets/sos_filter_row.dart';
+import '../widgets/patient_profile_modal.dart';
 
 class AdminSosScreen extends StatefulWidget {
   const AdminSosScreen({super.key});
@@ -72,7 +75,7 @@ class _AdminSosScreenState extends State<AdminSosScreen> {
               backgroundColor: Colors.green),
         );
       }
-      _fetchAlerts(); // تحديث الشاشة بعد الحل
+      _fetchAlerts();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -107,14 +110,16 @@ class _AdminSosScreenState extends State<AdminSosScreen> {
       ),
       body: Column(
         children: [
-          _buildFilterRow(),
+          SosFilterRow(
+            selectedStatus: _selectedStatusFilter,
+            onFilterChanged: _filterAlerts,
+          ),
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
                     onRefresh: _fetchAlerts,
                     child: _filteredAlerts.isEmpty
-                        // 🌟 حل مشكلة الـ RefreshIndicator لو الشاشة فاضية
                         ? ListView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             children: [
@@ -144,39 +149,52 @@ class _AdminSosScreenState extends State<AdminSosScreen> {
                                         alert['latitude'], alert['longitude']);
                                   }
                                 },
+                                // 🌟 استدعاء الدالة السحرية من الملف المنفصل
+                                onViewProfile: () {
+                                  final userId = alert['user_id'];
+                                  if (userId != null) {
+                                    showPatientProfileModal(
+                                        context, userId.toString());
+                                  }
+                                },
+                                onCallPatient: () async {
+                                  final userId = alert['user_id'];
+                                  if (userId == null) return;
+
+                                  final profile = await _supabase
+                                      .from('health_profiles')
+                                      .select('phone_number')
+                                      .eq('id', userId)
+                                      .maybeSingle();
+
+                                  final phone = profile?['phone_number'];
+
+                                  if (phone != null &&
+                                      phone.toString().isNotEmpty) {
+                                    final url = Uri.parse('tel:$phone');
+                                    if (await canLaunchUrl(url)) {
+                                      await launchUrl(url);
+                                    }
+                                  } else {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'No phone number registered for this patient.'
+                                                  .tr()),
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
                               );
                             },
                           ),
                   ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterRow() {
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: ['active', 'resolved', 'all'].map((status) {
-          final isSelected = _selectedStatusFilter == status;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(status.toUpperCase().tr()),
-              selected: isSelected,
-              selectedColor:
-                  status == 'active' ? AppTheme.destructive : AppTheme.primary,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-              ),
-              onSelected: (_) => _filterAlerts(status),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

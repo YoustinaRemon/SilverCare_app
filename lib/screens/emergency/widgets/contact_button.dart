@@ -6,31 +6,34 @@ class ContactButton extends StatelessWidget {
   final String label;
   final Color color;
   final String phone;
-
+  final VoidCallback? onTap;
   const ContactButton({
     super.key,
     required this.icon,
     required this.label,
     required this.color,
     required this.phone,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
-        onTap: () async {
-          final Uri url = Uri.parse('tel:$phone');
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url);
-          } else {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Could not launch dialer for $phone')),
-              );
-            }
-          }
-        },
+        onTap: onTap ??
+            () async {
+              final Uri url = Uri.parse('tel:$phone');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Could not launch dialer for $phone')),
+                  );
+                }
+              }
+            },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(

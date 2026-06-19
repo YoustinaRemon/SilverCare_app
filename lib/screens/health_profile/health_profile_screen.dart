@@ -23,11 +23,16 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
   bool _loading = true;
   bool _saving = false;
   bool _isEditing = false;
-  bool _uploadingImage = false; // مؤشر تحميل خاص برفع الصورة
-  String? _avatarUrl; // لحفظ رابط الصورة الحالي
+  bool _uploadingImage = false;
+  String? _avatarUrl;
 
   final _fullNameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+
+  // 🌟 Controllers الطوارئ الجديدة
+  final _emergencyContact1Ctrl = TextEditingController();
+  final _emergencyContact2Ctrl = TextEditingController();
+
   final _ageCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
   final _heightCtrl = TextEditingController();
@@ -49,6 +54,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
     for (final c in [
       _fullNameCtrl,
       _phoneCtrl,
+      _emergencyContact1Ctrl, // 🌟
+      _emergencyContact2Ctrl, // 🌟
       _ageCtrl,
       _weightCtrl,
       _heightCtrl,
@@ -81,7 +88,12 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
         if (data != null) {
           _fullNameCtrl.text = data['full_name'] ?? authName;
           _phoneCtrl.text = data['phone_number'] ?? '';
-          _avatarUrl = data['avatar_url']; // 🌟 قراءة رابط الصورة من الداتا بيز
+
+          // 🌟 قراءة أرقام الطوارئ من الداتا بيز
+          _emergencyContact1Ctrl.text = data['emergency_contact_1'] ?? '';
+          _emergencyContact2Ctrl.text = data['emergency_contact_2'] ?? '';
+
+          _avatarUrl = data['avatar_url'];
           _ageCtrl.text = data['age'] ?? '';
           _weightCtrl.text = data['weight_kg'] ?? '';
           _heightCtrl.text = data['height_cm'] ?? '';
@@ -103,7 +115,6 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
     if (mounted) setState(() => _loading = false);
   }
 
-  // 🌟 دالة اختيار الصورة ورفعها لـ Supabase Storage
   Future<void> _pickAndUploadImage() async {
     final user = _supabase.auth.currentUser;
     if (user == null) return;
@@ -168,6 +179,11 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
         'id': user.id,
         'full_name': _fullNameCtrl.text.trim(),
         'phone_number': _phoneCtrl.text.trim(),
+
+        // 🌟 حفظ أرقام الطوارئ في الداتا بيز
+        'emergency_contact_1': _emergencyContact1Ctrl.text.trim(),
+        'emergency_contact_2': _emergencyContact2Ctrl.text.trim(),
+
         'avatar_url': _avatarUrl,
         'age': _ageCtrl.text.trim(),
         'weight_kg': _weightCtrl.text.trim(),
@@ -234,6 +250,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                   onSave: _saveProfileData,
                   fullNameCtrl: _fullNameCtrl,
                   phoneCtrl: _phoneCtrl,
+                  emergencyContact1Ctrl: _emergencyContact1Ctrl, // 🌟
+                  emergencyContact2Ctrl: _emergencyContact2Ctrl, // 🌟
                   ageCtrl: _ageCtrl,
                   weightCtrl: _weightCtrl,
                   heightCtrl: _heightCtrl,
@@ -251,6 +269,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                   userEmail: userEmail,
                   fullNameCtrl: _fullNameCtrl,
                   phoneCtrl: _phoneCtrl,
+                  emergencyContact1Ctrl: _emergencyContact1Ctrl, // 🌟
+                  emergencyContact2Ctrl: _emergencyContact2Ctrl, // 🌟
                   ageCtrl: _ageCtrl,
                   weightCtrl: _weightCtrl,
                   heightCtrl: _heightCtrl,

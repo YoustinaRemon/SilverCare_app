@@ -7,8 +7,11 @@ class HealthProfileView extends StatelessWidget {
   final TextEditingController fullNameCtrl;
   final TextEditingController phoneCtrl;
 
-  // 🌟 استقبلنا رابط الصورة هنا
   final String? avatarUrl;
+
+  // 🌟 استقبال أرقام الطوارئ
+  final TextEditingController emergencyContact1Ctrl;
+  final TextEditingController emergencyContact2Ctrl;
 
   final TextEditingController ageCtrl;
   final TextEditingController weightCtrl;
@@ -25,7 +28,9 @@ class HealthProfileView extends StatelessWidget {
     required this.userEmail,
     required this.fullNameCtrl,
     required this.phoneCtrl,
-    required this.avatarUrl, // 🌟
+    required this.avatarUrl,
+    required this.emergencyContact1Ctrl, // 🌟
+    required this.emergencyContact2Ctrl, // 🌟
     required this.ageCtrl,
     required this.weightCtrl,
     required this.heightCtrl,
@@ -60,7 +65,6 @@ class HealthProfileView extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // 🌟 عرض الصورة لو موجودة، ولو مش موجودة يعرض أول حرف من الاسم
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: AppTheme.primary.withValues(alpha: .2),
@@ -106,6 +110,22 @@ class HealthProfileView extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
+
+          // 🌟 كارت أرقام الطوارئ في العرض 🌟
+          _InfoCard(
+            title: 'Emergency Contacts (Family)'.tr(),
+            icon: Icons.favorite_border_rounded,
+            data: {
+              'Primary'.tr(): emergencyContact1Ctrl.text.isEmpty
+                  ? 'None'.tr()
+                  : emergencyContact1Ctrl.text,
+              'Secondary'.tr(): emergencyContact2Ctrl.text.isEmpty
+                  ? 'None'.tr()
+                  : emergencyContact2Ctrl.text,
+            },
+          ),
+          const SizedBox(height: 16),
+
           _InfoCard(
             title: 'Vital Signs'.tr(),
             icon: Icons.monitor_heart_outlined,

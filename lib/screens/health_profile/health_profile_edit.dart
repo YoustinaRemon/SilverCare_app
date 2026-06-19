@@ -6,13 +6,16 @@ class HealthProfileEdit extends StatelessWidget {
   final bool isSaving;
   final VoidCallback onSave;
 
-  // 🌟 المتغيرات الخاصة بالصورة
   final String? avatarUrl;
   final bool isUploadingImage;
   final VoidCallback onPickImage;
 
   final TextEditingController fullNameCtrl;
   final TextEditingController phoneCtrl;
+
+  final TextEditingController emergencyContact1Ctrl;
+  final TextEditingController emergencyContact2Ctrl;
+
   final TextEditingController ageCtrl;
   final TextEditingController weightCtrl;
   final TextEditingController heightCtrl;
@@ -27,11 +30,13 @@ class HealthProfileEdit extends StatelessWidget {
     super.key,
     required this.isSaving,
     required this.onSave,
-    required this.avatarUrl, // 🌟
-    required this.isUploadingImage, // 🌟
-    required this.onPickImage, // 🌟
+    required this.avatarUrl,
+    required this.isUploadingImage,
+    required this.onPickImage,
     required this.fullNameCtrl,
     required this.phoneCtrl,
+    required this.emergencyContact1Ctrl, // 🌟
+    required this.emergencyContact2Ctrl, // 🌟
     required this.ageCtrl,
     required this.weightCtrl,
     required this.heightCtrl,
@@ -62,8 +67,6 @@ class HealthProfileEdit extends StatelessWidget {
                 theme.textTheme.bodyMedium?.copyWith(color: AppTheme.mutedFg),
           ),
           const SizedBox(height: 24),
-
-          // 🌟 شكل دائرة الصورة مع أيقونة الكاميرا
           Center(
             child: Stack(
               children: [
@@ -83,7 +86,7 @@ class HealthProfileEdit extends StatelessWidget {
                   bottom: 0,
                   right: 0,
                   child: GestureDetector(
-                    onTap: onPickImage, // 🌟 الدالة اللي بتفتح الاستوديو
+                    onTap: onPickImage,
                     child: const CircleAvatar(
                       radius: 18,
                       backgroundColor: AppTheme.primary,
@@ -96,16 +99,20 @@ class HealthProfileEdit extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
           _Section('Basic Information'.tr()),
-
           _Field('Full Name'.tr(), fullNameCtrl, hint: 'e.g. Fadi Emad'),
           const SizedBox(height: 12),
-
           _Field('Phone Number'.tr(), phoneCtrl,
               hint: 'e.g. 01000000000', type: TextInputType.phone),
+          const SizedBox(height: 20),
+          _Section('Emergency Contacts (Family)'.tr()),
+          _Field('Primary Contact'.tr(), emergencyContact1Ctrl,
+              hint: 'e.g. 01000000000', type: TextInputType.phone),
           const SizedBox(height: 12),
-
+          _Field('Secondary Contact (Optional)'.tr(), emergencyContact2Ctrl,
+              hint: 'e.g. 01100000000', type: TextInputType.phone),
+          const SizedBox(height: 20),
+          _Section('Body Metrics'.tr()),
           Row(children: [
             Expanded(
                 child: _Field('Age'.tr(), ageCtrl,
@@ -120,7 +127,6 @@ class HealthProfileEdit extends StatelessWidget {
                     suffix: 'cm'.tr(), type: TextInputType.number)),
           ]),
           const SizedBox(height: 20),
-
           _Section('Vital Signs'.tr()),
           _Field('Blood Sugar'.tr(), bloodSugarCtrl,
               suffix: 'mg_dl'.tr(), type: TextInputType.number),
@@ -135,7 +141,6 @@ class HealthProfileEdit extends StatelessWidget {
                     suffix: 'mmhg'.tr(), type: TextInputType.number)),
           ]),
           const SizedBox(height: 20),
-
           _Section('Medical History'.tr()),
           _Field('Chronic Diseases'.tr(), chronicCtrl,
               hint: 'chronic_hint'.tr(), maxLines: 2),
@@ -144,7 +149,6 @@ class HealthProfileEdit extends StatelessWidget {
               hint: 'allergies_hint'.tr(), maxLines: 2),
           const SizedBox(height: 12),
           _Field('Notes'.tr(), notesCtrl, hint: 'notes_hint'.tr(), maxLines: 3),
-
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,

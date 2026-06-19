@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-
 import '../../../theme/app_theme.dart';
 
 class AdminAlertCard extends StatelessWidget {
   final Map<String, dynamic> alert;
   final VoidCallback onResolve;
   final VoidCallback onOpenMap;
+  // 🌟 ضفنا الدوال الجديدة هنا
+  final VoidCallback onCallPatient;
+  final VoidCallback onViewProfile;
 
   const AdminAlertCard({
     super.key,
     required this.alert,
     required this.onResolve,
     required this.onOpenMap,
+    required this.onCallPatient, // 🌟
+    required this.onViewProfile, // 🌟
   });
 
   @override
@@ -38,6 +42,7 @@ class AdminAlertCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ─── Header ───
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -74,6 +79,8 @@ class AdminAlertCard extends StatelessWidget {
               ],
             ),
             const Divider(height: 24),
+
+            // ─── Info ───
             if (createdAt != null)
               Row(
                 children: [
@@ -112,7 +119,41 @@ class AdminAlertCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
+            // 🌟 ─── الصف الأول من الأزرار (الملف الطبي والاتصال) ─── 🌟
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: onViewProfile,
+                    icon: const Icon(Icons.medical_information_outlined),
+                    label: Text('Profile'.tr()),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple.shade50,
+                      foregroundColor: Colors.purple.shade700,
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: onCallPatient,
+                    icon: const Icon(Icons.call),
+                    label: Text('Call'.tr()),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade50,
+                      foregroundColor: Colors.green.shade700,
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // ─── الصف الثاني من الأزرار (الخريطة وحل المشكلة) ───
             Row(
               children: [
                 if (lat != null && lng != null)

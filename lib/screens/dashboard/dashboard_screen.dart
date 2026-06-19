@@ -8,6 +8,10 @@ import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/medication_provider.dart';
 
+import 'widgets/broadcast_banner.dart';
+import 'widgets/stat_card.dart';
+import 'widgets/info_chip.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -22,6 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _healthProfile;
   int _alertsCount = 0;
   int _bookingsCount = 0;
+  String? _broadcastMessage;
 
   @override
   void initState() {
@@ -42,9 +47,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       await context.read<MedicationProvider>().load(user.id);
 
       final results = await Future.wait<dynamic>([
-        _db.from('Health Profile').select().eq('id', user.id).maybeSingle(),
+        _db.from('health_profiles').select().eq('id', user.id).maybeSingle(),
         _db.from('emergency_alerts').select('id').eq('user_id', user.id),
         _db.from('companion_bookings').select('id').eq('user_id', user.id),
+        _db
+            .from('broadcast_alerts')
+            .select('message')
+            .eq('is_active', true)
+            .order('created_at', ascending: false)
+            .limit(1)
+            .maybeSingle(),
       ]);
 
       if (!mounted) return;
@@ -52,9 +64,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _healthProfile = results[0] as Map<String, dynamic>?;
         _alertsCount = (results[1] as List?)?.length ?? 0;
         _bookingsCount = (results[2] as List?)?.length ?? 0;
+
+        final broadcastData = results[3] as Map<String, dynamic>?;
+        _broadcastMessage = broadcastData?['message'] as String?;
+
         _loading = false;
       });
-    } catch (_) {
+    } catch (e) {
+      debugPrint('🔴🔴 Dashboard Error: $e');
       if (mounted) setState(() => _loading = false);
     }
   }
@@ -77,6 +94,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 🌟 استخدام ودجت شريط الإعلانات
+            if (_broadcastMessage != null && _broadcastMessage!.isNotEmpty)
+              BroadcastBanner(message: _broadcastMessage!),
+
             /// HEADER
             Text('Overview'.tr(), style: theme.textTheme.displayMedium),
             const SizedBox(height: 4),
@@ -97,7 +118,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: _StatCard(
+                        child: StatCard(
+                          // 🌟 استخدام StatCard النظيف
                           title: 'Medications'.tr(),
                           value: '$medsTaken / $medsTotal',
                           sub: 'completed'.tr(args: ['$medPct']),
@@ -108,7 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _StatCard(
+                        child: StatCard(
                           title: 'Health Status'.tr(),
                           value: hp?['chronic_diseases'] != null
                               ? 'Managed'.tr()
@@ -130,7 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: _StatCard(
+                        child: StatCard(
                           title: 'Alerts History'.tr(),
                           value: '$_alertsCount',
                           sub: 'Emergency events logged'.tr(),
@@ -144,7 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _StatCard(
+                        child: StatCard(
                           title: 'Care Network'.tr(),
                           value: '$_bookingsCount',
                           sub: 'Active bookings'.tr(),
@@ -258,20 +280,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _InfoChip(
-                            'age'.tr(),
-                            '${hp['age'] ?? '—'} ${'yrs'.tr()}',
-                          ),
-                          _InfoChip(
-                            'weight'.tr(),
-                            '${hp['weight_kg'] ?? '—'} kg',
-                          ),
-                          _InfoChip(
-                            'sugar'.tr(),
-                            '${hp['blood_sugar'] ?? '—'} mg/dL',
-                          ),
+                          InfoChip(
+                              'age'.tr(), '${hp['age'] ?? '—'} ${'yrs'.tr()}'),
+                          InfoChip(
+                              'weight'.tr(), '${hp['weight_kg'] ?? '—'} kg'),
+                          InfoChip('sugar'.tr(),
+                              '${hp['blood_sugar'] ?? '—'} mg/dL'),
                           if (hp['blood_pressure_systolic'] != null)
-                            _InfoChip(
+                            InfoChip(
                               'bp'.tr(),
                               '${hp['blood_pressure_systolic']}/${hp['blood_pressure_diastolic']}',
                             ),
@@ -360,138 +376,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// _StatCard
-// ---------------------------------------------------------------------------
-
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final String sub;
-  final IconData icon;
-  final Color iconColor;
-  final Color iconFg;
-  final Color? valueColor;
-
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.sub,
-    required this.icon,
-    required this.iconColor,
-    required this.iconFg,
-    this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      clipBehavior: Clip.hardEdge,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppTheme.mutedFg,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: iconColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, size: 16, color: iconFg),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    color: valueColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  sub,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppTheme.mutedFg,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// _InfoChip
-// ---------------------------------------------------------------------------
-
-class _InfoChip extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoChip(this.label, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.muted,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.mutedFg,
-                ),
-          ),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
-        ],
       ),
     );
   }
